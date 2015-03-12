@@ -1,0 +1,11 @@
+<launch>
+
+	<node pkg="serodi_app" type="webserver.py" name="webserver_wlan" cwd="node" respawn="true" >
+		<param name="port" value="9876" />
+	</node>
+
+	<node pkg="serodi_app" type="webserver.py" name="webserver_adb" cwd="node" respawn="true" >
+		<param name="port" value="38300" />
+	</node>
+	
+</launch>

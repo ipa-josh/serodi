@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>jQuery UI Accordion - Default functionality</title>
+  <link rel="stylesheet" href="jquery/jquery-ui.css">
+  <script src="jquery/jquery.js"></script>
+  <script src="jquery/jquery-ui.js"></script>
+  <script src="jquery/jquery.ui.touch-punch.min.js"></script>
+  <script src="jquery/jquery.steps.min.js"></script>
+  <script src="js/eventemitter2.min.js"></script>
+  <script src="js/roslib.min.js"></script>
+<script src="js/Vector2.js"></script>
+<script src="js/ShipMovingTouch.js"></script>
+<script src="js/BulletSebs.js"></script>
+  <script src="js/joystick.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/log.js"></script>
+  <script src="js/misc.js"></script>
+  <link rel="stylesheet" href="css/steps.css">
+  <link rel="stylesheet" href="css/style.css">
+  
+  <!-- DataTables -->
+<link rel="stylesheet" type="text/css" href="css/jquery.dataTables.min.css">
+<script type="text/javascript" charset="utf8" src="js/jquery.dataTables.min.js"></script>
+
+  <script>
+	
+	var map;
+	var known_lights = [];
+  $(function() {
+	  init_gallery();
+    $( "#menu" ).accordion();
+	$( "button" ).button();
+	
+	$("#wizard_setup").steps({
+		headerTag: "h3",
+		bodyTag: "section",
+		transitionEffect: "slideLeft",
+		autoFocus: true,
+		enableKeyNavigation: false,
+		enablePagination: false,
+		forceMoveForward: true,
+		onStepChanging: function (event, currentIndex, newIndex)
+		{
+			console.log(newIndex);
+			
+			if(newIndex==4 || newIndex==5) {
+				map.settings['add_enabled'] = true;
+			}
+			
+			if(newIndex==4) {
+				
+				map.on_updated_pose = function() {
+					for(i=0; i<map.poses.length; i++)
+						map.poses[i][3] = (i+1)+".";
+					if(map.poses.length>1)
+						$("setup_3_confirm").button( "enable" );
+					else
+						$("setup_3_confirm").button( "diabled" );
+				}
+				if(currentIndex!=newIndex) map.clearPoses();
+				
+				return map.poses.length>1;
+			}
+			
+			if(newIndex==5) {
+				
+				map.on_updated_pose = function() {
+					//turn off all lights except for next
+					for(i=0; i<known_lights.length; i++)
+						set_external_light(ros, known_lights[i]['housecode'], known_lights[i]['addr_fs20'], (i==map.poses.length));
+					
+					for(i=0; i<map.poses.length; i++)
+						map.poses[i][3] = known_lights[i].name;
+					if(known_lights==map.poses.length) {
+						map.settings['add_enabled'] = false;
+						$("setup_3_confirm").button( "enable" );
+					}
+					else {
+						map.settings['add_enabled'] = true;
+						$("setup_3_confirm").button( "diabled" );
+					}
+				}
+				if(currentIndex!=newIndex) map.clearPoses();
+				
+				return map.poses.length!=known_lights.length;
+			}
+			
+			return true;
+		}
+	});
+	$("#setup_0_confirm").click(function() {
+		$("setup_3_confirm").button( "diabled" );
+		$("setup_4_confirm").button( "diabled" );
+		$( "#dialog_setup" ).append('<p><div id="setup_map" /></p>');
+		map = new Map("img/map/map_occ.png", $("#setup_map"), ros);
+		
+		$("#wizard_setup").steps("next");
+		active = $("#wizard_setup");
+		sendChoice("setup");
+	});
+	$("#setup_3_confirm").click(function() {
+		sendChoice("path:"+JSON.stringify({'path':map.poses}));
+		$("#wizard_setup").steps("next");
+	});
+	$("#setup_4_confirm").click(function() {
+		data = []
+		for(i=0; i<known_lights.length; i++) {
+			data.push($.extend(known_lights[i], {
+				'pose': map.poses[i]
+				}));
+		}
+		sendChoice("lights:"+JSON.stringify({'lights':data}));
+		$("#wizard_setup").steps("next");
+	});
+	
+	$("#wizard_localization").steps({
+		headerTag: "h3",
+		bodyTag: "section",
+		transitionEffect: "slideLeft",
+		autoFocus: true,
+		enableKeyNavigation: false,
+		enablePagination: false,
+		forceMoveForward: true
+	});
+	$("#localization_0_confirm").click(function() {
+	});
+	
+	$( "#dialog_setup" ).dialog({autoOpen: false,
+		width: 800,
+		close: function( event, ui ) {sendCancel();}}
+	);
+	$( "#dialog_localization" ).dialog({autoOpen: false,
+		width: 800,
+		close: function( event, ui ) {sendCancel();}}
+	);
+	$( "#dialog_scenario" ).dialog({autoOpen: false,
+		width: 800,
+		close: function( event, ui ) {sendCancel();}}
+	);
+	$( "#dialog_log" ).dialog({autoOpen: false,
+		width: 800
+	});
+	$( "#dialog-confirm" ).dialog({autoOpen: false,
+      resizable: false,
+      height:230,
+      modal: true,
+      buttons: {
+        "Shutdown": function() {
+		  sendChoice("shutdown");
+          $( this ).dialog( "close" );
+        },
+        Cancel: function() {
+          $( this ).dialog( "close" );
+        }
+      }
+    });
+	
+	$("#ros_error").click(function() {$( "#dialog_log" ).dialog("open");});
+	$("#ros_connected").click(function() {$( "#dialog_log" ).dialog("open");});
+	
+	$("#start_setup").click(function() {
+		$( "#dialog_setup" ).dialog("open");
+	});
+	$("#start_localization").click(function() {
+		$( "#dialog_localization" ).dialog("open");
+	});
+	$("#start_scenario").click(function() {
+		sendChoice("scenario");
+		$( "#dialog_scenario" ).dialog("open");
+	});
+	$("#start_shutdown").click(function() {
+		$( "#dialog-confirm" ).dialog("open");
+	});
+
+	$( "#radio" ).buttonset();
+	var joy = new Joystick("joystick", ros);
+	joy.enabled = false;
+	joy.update();
+	$("#joystick_lockL").click(function(){joy.enabled=false;joy.update();});
+	$("#joystick_lockU").click(function(){joy.enabled=true;joy.update();});
+	
+	$("#ros_connected").hide();
+	
+	start_logging(ros, $("#log_tbl"));
+  });
+  
+  // Connecting to ROS
+  // -----------------
+  var ros_master_uris=['ws://localhost:9090', 'ws://'+window.location.hostname+':9090', 'ws://localhost:9090'];
+  //var ros_master_uris=['ws://'+window.location.hostname+':9090'];
+  var ros_master_uris_last = 0;
+  var ros = new ROSLIB.Ros();
+  var active;
+  
+  function sendChoice(choice) {
+	  console.log("choice: "+choice);
+	  var msg = new ROSLIB.Message({
+		data : choice
+	  });
+	  // And finally, publish.
+	  pub_choice.publish(msg);
+  }
+  function sendCancel() {
+	  delete map;
+	  sendChoice("canceled");
+  }
+  
+  // If there is an error on the backend, an 'error' emit will be emitted.
+  ros.on('error', function(error) {
+	  $("#menu").accordion( "disable" );
+	$("#ros_connected").hide();
+	$("#ros_error").show();
+	$("#ros_error").effect("shake");
+    console.log(error);
+  });
+  // Find out exactly when we made a connection.
+  ros.on('connection', function() {
+	  $("#menu").accordion( "enable" );
+	$("#ros_connected").show();
+	$("#ros_error").hide();
+	$("#ros_connected").effect("shake");
+    console.log('Connection made!');
+  });
+  ros.on('close', function() {
+	  $("#menu").accordion( "disable" );
+	$("#ros_connected").hide();
+	$("#ros_error").show();
+	$("#ros_error").effect("shake");
+    console.log('Connection closed.');
+    
+    setTimeout(ros_reconnect, 2000);
+  });
+  
+  // Create a connection to the rosbridge WebSocket server.
+  try {
+	ros.connect(ros_master_uris[ros_master_uris_last]);
+  } catch(e) {
+	console.log(e);
+  }
+  function ros_reconnect() {
+	  ros_master_uris_last = (ros_master_uris_last+1)%ros_master_uris.length;
+	  ros.connect(ros_master_uris[ros_master_uris_last]);
+  }
+  
+  // Like when publishing a topic, we first create a Topic object with details of the topic's name
+  // and message type. Note that we can call publish or subscribe on the same topic object.
+  var sub_menu = new ROSLIB.Topic({
+    ros : ros,
+    name : '/ui/menu',
+    messageType : 'std_msgs/String'
+  });
+  // Then we add a callback to be called every time a message is published on this topic.
+  sub_menu.subscribe(function(message) {
+    console.log("ui menu: ",message);
+    //sub_menu.unsubscribe();
+    
+    cmd = message.data.split(":");
+    if(cmd.length<1) return;
+    
+    if(cmd[0]=="next") {
+		if(active) active.steps("next");
+	}
+  });
+  
+  // First, we create a Topic object with details of the topic's name and message type.
+  var pub_choice = new ROSLIB.Topic({
+    ros : ros,
+    name : '/ui/choice',
+    messageType : 'std_msgs/String'
+  });
+
+  (new ROSLIB.Param({ros : ros, name : '/ui/known_lights'})).get(function(value) {
+      if(value==null) known_lights=[];
+      else known_lights = value;
+      console.log('known_lights: ' + known_lights);
+  });
+  </script>
+</head>
+<body>
+	
+	
+<div id="dialog_log" title="Log">
+	<table id="log_tbl" class="display" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th>File</th>
+                <th>Level</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+ 
+        <tfoot>
+            <tr>
+                <th>File</th>
+                <th>Level</th>
+                <th>Message</th>
+            </tr>
+        </tfoot>
+ 
+        <tbody></tbody>
+   </table>
+</div>
+
+
+<div id="dialog_setup" title="Setup">
+<div id="wizard_setup">
+    <h3>Warnings</h3>
+    <section>
+        <p>
+			Text <br />
+			<button id="setup_0_confirm">Ok</button>
+        </p>
+    </section>
+    <h3>Mapping...</h3>
+    <section>
+        <p>Please wait...</p>
+    </section>
+    <h3>Localize...</h3>
+    <section>
+        <p>Please wait...</p>
+    </section>
+    <h3>Set Patrol Path</h3>
+    <section>
+        <p>The next and previous buttons help you to navigate through your content.</p>
+        <p>
+			<button id="setup_3_confirm">Ok</button>
+        </p>
+    </section>
+    <h3>Set Poses of Lights</h3>
+    <section>
+        <p>The next and previous buttons help you to navigate through your content.</p>
+        <p>
+			<button id="setup_4_confirm">Ok</button>
+        </p>
+    </section>
+    <h3>Done!</h3>
+    <section>
+        <p>The next and previous buttons help you to navigate through your content.</p>
+    </section>
+</div>
+</div>
+	
+<div id="dialog_localization" title="Setup">
+<div id="wizard_localization">
+    <h3>Warnings</h3>
+    <section>
+        <p>
+			Text <br />
+			<button id="localization_0_confirm">Ok</button>
+        </p>
+    </section>
+    <h3>Choice...</h3>
+    <section>
+        <p>Please wait...</p>
+    </section>
+    <h3>Localize...</h3>
+    <section>
+        <p>Please wait...</p>
+    </section>
+    <h3>Done!</h3>
+    <section>
+        <p>The next and previous buttons help you to navigate through your content.</p>
+    </section>
+</div>
+</div>
+
+<div id="dialog-confirm" title="Shutdown the robot?">
+  <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>This will shutdown the robot. Are you sure?</p>
+</div>
+	
+<div id="dialog_scenario" title="Pflegewagenverwaltung">
+<div class="ui-widget ui-helper-clearfix">
+ 
+<ul id="gallery" class="gallery ui-helper-reset ui-helper-clearfix">
+  <li class="ui-widget-content ui-corner-tr">
+    <img src="img/content/dummy.jpg" alt="The peaks of High Tatras" width="96" height="72">
+  </li>
+  <li class="ui-widget-content ui-corner-tr">
+    <img src="img/content/dummy.jpg" alt="The chalet at the Green mountain lake" width="96" height="72">
+  </li>
+  <li class="ui-widget-content ui-corner-tr">
+    <img src="img/content/dummy.jpg" alt="Planning the ascent" width="96" height="72">
+  </li>
+  <li class="ui-widget-content ui-corner-tr">
+    <img src="img/content/dummy.jpg" alt="On top of Kozi kopka" width="96" height="72">
+  </li>
+</ul>
+ 
+<div id="trash" class="ui-widget-content ui-state-default">
+  <h4 class="ui-widget-header"><span class="ui-icon ui-icon-trash">Verbraucht</span> Verbraucht</h4>
+</div>
+ 
+</div>
+</div>
+ 
+<table>
+<tr>
+<td>
+	<div id="ros_connected"><img src="img/robot_ok.png" height="400" /></div>
+	<div id="ros_error"><img src="img/robot_err.png" height="400" /></div>
+	<br />
+	<div id="radio">
+		<input type="radio" id="joystick_lockL" name="joystick_lock" checked="checked"><label for="joystick_lockL">Lock</label>
+		<input type="radio" id="joystick_lockU" name="joystick_lock"><label for="joystick_lockU">Unlock</label>
+	</div>
+	<div id="joystick" style="width:200px;height:200px;" />
+</td>
+<td>
+
+<div id="menu" style="height:666px">
+  <h3>Scenario</h3>
+  <div>
+    <p>
+    Erklärung<br>
+    Sed non urna. Donec et ante. Phasellus eu ligula. Vestibulum sit amet
+    purus. Vivamus hendrerit, dolor at aliquet laoreet, mauris turpis porttitor
+    velit, faucibus interdum tellus libero ac justo. Vivamus non quam. In
+    suscipit faucibus urna.
+    </p>
+    <p>
+    <button style="float:right;" id="start_scenario">Start</button>
+    </p>
+  </div>
+  <h3>Localization</h3>
+  <div>
+    <p>
+    Erklärung<br>
+    Sed non urna. Donec et ante. Phasellus eu ligula. Vestibulum sit amet
+    purus. Vivamus hendrerit, dolor at aliquet laoreet, mauris turpis porttitor
+    velit, faucibus interdum tellus libero ac justo. Vivamus non quam. In
+    suscipit faucibus urna.
+    </p>
+    <p>
+    <button style="float:right;" id="start_localization">Start</button>
+    </p>
+  </div>
+  <h3>Setup</h3>
+  <div>
+    <p>
+    Erklärung<br>
+    Sed non urna. Donec et ante. Phasellus eu ligula. Vestibulum sit amet
+    purus. Vivamus hendrerit, dolor at aliquet laoreet, mauris turpis porttitor
+    velit, faucibus interdum tellus libero ac justo. Vivamus non quam. In
+    suscipit faucibus urna.
+    </p>
+    <p>
+    <button style="float:right;" id="start_setup">Start</button>
+    </p>
+  </div>
+  <h3>Shutdown</h3>
+  <div>
+    <p>
+    Erklärung<br>
+    Sed non urna. Donec et ante. Phasellus eu ligula. Vestibulum sit amet
+    purus. Vivamus hendrerit, dolor at aliquet laoreet, mauris turpis porttitor
+    velit, faucibus interdum tellus libero ac justo. Vivamus non quam. In
+    suscipit faucibus urna.
+    </p>
+    <p>
+    <button style="float:right;" id="start_shutdown">Shutdown</button>
+    </p>
+  </div>
+</div>
+ </td></tr>
+ </table>
+ 
+</body>
+</html>
