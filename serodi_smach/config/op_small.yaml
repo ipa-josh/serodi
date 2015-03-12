@@ -1,0 +1,3 @@
+lights:
+- {name: 'Vorne', 'waiting_time': 10, 'pose':[0,0,0]}
+- {name: 'Hinten', 'waiting_time': 10, 'pose':[0,0,0]}
