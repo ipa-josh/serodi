@@ -1,0 +1,8 @@
+#request to turn on or off of FS20 device
+
+string housecode	#housecode as string, length 8, example: 12341234 (1...4)
+string addr_fs20	#address of fs20 devices as string, length 4, example: 1234 (1...4)
+bool   on
+---
+bool success
+string error_msg
