@@ -26,7 +26,7 @@ if __name__ == "__main__":
     resp = driver.connect()
     if resp!=None:
         rospy.logerr(resp)
-        sleep(0.1)
+        time.sleep(1)
         exit(1)
 
     s = rospy.Service('fs20switch', FS20Switch, handle_switch)
