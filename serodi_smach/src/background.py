@@ -4,6 +4,7 @@ import sys
 import rospy
 import cob_srvs.srv
 import sensor_msgs.msg
+import cob_relayboard.msg
 import time
 
 global sub_js
@@ -19,7 +20,7 @@ def recover_base():
 needs_recover = False
 def cb_em(data):
 	global needs_recover
-	em = 
+	em = (data.emergency_state==1)
 	needs_recover = (needs_recover or em)
 	if needs_recover and not em:
 		recover_base()
@@ -32,6 +33,6 @@ def cb_js(data):
 
 if __name__ == "__main__":
 	rospy.init_node('background', anonymous=True)
-    rospy.Subscriber("//emergency", String, cb_em, 1)
-    sub_js = rospy.Subscriber("/joint_states", sensor_msgs.msg.JointState, cb_js, 1)
-    rospy.spin()
+	rospy.Subscriber("/emergency", cob_relayboard.msg.EmergencyStopState, cb_em, 1)
+	sub_js = rospy.Subscriber("/joint_states", sensor_msgs.msg.JointState, cb_js, 1)
+	rospy.spin()
