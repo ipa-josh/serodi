@@ -21,10 +21,14 @@ bool check_closure(int x, int y, std::vector<bool> &occ, const cv::Mat &costmap,
 		aim_y=y;
 	}
 	
-	if(	!check_closure(x-1,y,occ,costmap, unk_map,aim_x,aim_y) ||
-		!check_closure(x+1,y,occ,costmap, unk_map,aim_x,aim_y) ||
-		!check_closure(x,y-1,occ,costmap, unk_map,aim_x,aim_y) ||
-		!check_closure(x,y+1,occ,costmap, unk_map,aim_x,aim_y)) {
+	const int ar_x[4] = {x-1,x+1,x,x};
+	const int ar_y[4] = {y,y,y-1,y+1};
+	const int roff = rand()%4;	//select random order
+	
+	if(	!check_closure(ar_x[(roff+0)%4],ar_y[(roff+0)%4],occ,costmap, unk_map,aim_x,aim_y) ||
+		!check_closure(ar_x[(roff+1)%4],ar_y[(roff+1)%4],occ,costmap, unk_map,aim_x,aim_y) ||
+		!check_closure(ar_x[(roff+2)%4],ar_y[(roff+2)%4],occ,costmap, unk_map,aim_x,aim_y) ||
+		!check_closure(ar_x[(roff+3)%4],ar_y[(roff+3)%4],occ,costmap, unk_map,aim_x,aim_y)) {
 		
 		if(aim_x<0) {
 			aim_x=x;
