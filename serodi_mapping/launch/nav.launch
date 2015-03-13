@@ -1,0 +1,6 @@
+<launch>
+		<!-- start navigation -->
+		<include file="$(find cob_navigation_global)/launch/2dnav_ros_dwa.launch">
+			   <arg name="map" value="~/map.yaml" />
+		</include>
+</launch>
