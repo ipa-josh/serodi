@@ -275,33 +275,37 @@ class Wait(smach.State):
 
 import serodi_lights.srv
 class SetLight(smach.State):
-    def __init__(self, light, color):
+    def __init__(self, sss, color, light=None):
         smach.State.__init__(self, outcomes=['success','failed'], input_keys=[], output_keys=[])
         self.light = light
         self.color = color
+        self.sss = sss
 
     def execute(self, userdata):
-        addr1 = light["addr_fs20"]
-        addr2 = addr1[:len(addr1)-1]+str(int(addr1[len(addr1)-1])+1)
-        
-        req = serodi_lights.srv.FS20SwitchRequest()
-        req.housecode = light["housecode"]
-        
-        set_light = rospy.ServiceProxy('/fs20switch', serodi_lights.srv.FS20Switch)
-		
-        req.addr_fs20 = addr1
-        req.on = (color=="red")
-        res = set_light( req )
-        if res.success != True:
-			smach.logerr(res.error_msg)
-			return 'failed'
-		
-        req.addr_fs20 = addr2
-        req.on = (color=="green")
-        res = set_light( req )
-        if res.success != True:
-			smach.logerr(res.error_msg)
-			return 'failed'
+		if self.light!=None:
+			addr1 = self.light["addr_fs20"]
+			addr2 = addr1[:len(addr1)-1]+str(int(addr1[len(addr1)-1])+1)
+			
+			req = serodi_lights.srv.FS20SwitchRequest()
+			req.housecode = self.light["housecode"]
+			
+			set_light = rospy.ServiceProxy('/fs20switch', serodi_lights.srv.FS20Switch)
+			
+			req.addr_fs20 = addr1
+			req.on = (self.color=="red")
+			res = set_light( req )
+			if res.success != True:
+				smach.logerr(res.error_msg)
+				return 'failed'
+			
+			req.addr_fs20 = addr2
+			req.on = (self.color=="green")
+			res = set_light( req )
+			if res.success != True:
+				smach.logerr(res.error_msg)
+				return 'failed'
+		else:
+			self.sss.set_ligh(self.color)
 			
         return 'success'
 
