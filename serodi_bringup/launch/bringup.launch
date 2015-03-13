@@ -1,0 +1,10 @@
+<launch>
+
+	<node name="background" pkg="serodi_smach" type="background.py" respawn="true" output="screen" />
+	<node name="external_lights" pkg="serodi_lights" type="interface.py" respawn="true" output="screen" />
+
+	<include file="$(find serodi_smach)/launch/start.launch" />
+	
+	<include file="$(find serodi_app)/launch/webserver.launch" />
+	
+</launch>
