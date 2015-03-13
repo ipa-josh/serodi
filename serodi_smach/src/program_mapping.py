@@ -18,6 +18,7 @@ def main(do_setup):
     rospy.init_node('serodi_smach_prog_mapping')
 
     # Create a SMACH state machine
+    logger = states.interaction.SMACHCustomLogger()
     sm = smach.StateMachine(outcomes=['success', 'failure'])
     
     sm.userdata.data = {'op_small':{}, 'op_patrol':{}}
