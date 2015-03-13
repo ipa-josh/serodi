@@ -7,5 +7,7 @@
 	<node pkg="serodi_app" type="webserver.py" name="webserver_adb" cwd="node" respawn="true" >
 		<param name="port" value="38300" />
 	</node>
+
+	<node pkg="serodi_app" type="adb_connect.py" name="adb_connection" cwd="node" respawn="true" />
 	
 </launch>
