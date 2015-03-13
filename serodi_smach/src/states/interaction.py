@@ -272,6 +272,8 @@ class Wait(smach.State):
 		rospy.sleep(self.time)
 		return 'success'
 
+
+import serodi_lights.srv
 class SetLight(smach.State):
     def __init__(self, light, color):
         smach.State.__init__(self, outcomes=['success','failed'], input_keys=[], output_keys=[])
@@ -280,6 +282,28 @@ class SetLight(smach.State):
 
     def execute(self, userdata):
         print "TODO: SetLight"
+        addr1 = light["addr_fs20"]
+        addr2 = addr1[:len(addr1)-1]+str(int(addr1[len(addr1)-1])+1)
+        
+        req = serodi_lights.srv.FS20SwitchRequest()
+        req.housecode = light["housecode"]
+        
+		set_light = rospy.ServiceProxy('/fs20switch', serodi_lights.srv.FS20Switch)
+		
+		req.addr_fs20 = addr1
+		req.on = (color=="red")
+		res = set_light( req )
+		if res.success != True:
+			smach.logerr(res.error_msg)
+			return 'failed'
+		
+		req.addr_fs20 = addr2
+		req.on = (color=="green")
+		res = set_light( req )
+		if res.success != True:
+			smach.logerr(res.error_msg)
+			return 'failed'
+			
         return 'success'
 
 class ShowMenu(smach.State):

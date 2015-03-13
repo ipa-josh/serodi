@@ -48,12 +48,12 @@ def main():
 					outcomes = ['success','failed'],
 					connector_outcome = 'success')
 			with sq:
-				smach.Sequence.add('SetLight_'+l+"_RED", states.interaction.SetLight(l,'red'))
+				smach.Sequence.add('SetLight_'+l+"_RED", states.interaction.SetLight(light,'red'))
 				smach.Sequence.add('MoveTo_'+l, states.movement.MoveToPose(sss,light['pose']))
-				smach.Sequence.add('SetLight_'+l+"_GREEN", states.interaction.SetLight(l,'green'))
+				smach.Sequence.add('SetLight_'+l+"_GREEN", states.interaction.SetLight(light,'green'))
 				smach.Sequence.add('Wait_'+l, states.interaction.Wait(light['waiting_time']))
 				smach.Sequence.add('MoveToHome_'+l, states.movement.MoveToPose(sss,'home'))
-				smach.Sequence.add('SetLight_'+l+"_OFF", states.interaction.SetLight(l,'off'))
+				smach.Sequence.add('SetLight_'+l+"_OFF", states.interaction.SetLight(light,'off'))
 				
 			smach.StateMachine.add('OpSmall_'+l, sq, 
                                transitions={'success':'success',  'failed':'failure'})
