@@ -22,8 +22,8 @@ def main():
     sm.userdata.data = {'op_small':{}}
     sm.userdata.running_processes = {}
     
-    LOC_PKG="cob_navigation_global"
-    LOC_BIN="2dnav_ros_dwa.launch"
+    LOC_PKG="serodi_mapping"
+    LOC_BIN="nav.launch"
 
     # Open the container
     with sm:

@@ -36,6 +36,7 @@ def main(do_setup):
 				smach.Sequence.add('Mapping1', states.initialization.ROSLaunch('cob_mapping_slam','2dslam.launch'))
 				smach.Sequence.add('WaitM2', states.interaction.Wait(10))
 				smach.Sequence.add('Mapping2', states.movement.Explore(sss))
+				smach.Sequence.add('SaveMap', states.initialization.System("rosrun map_server map_server ~/map.yaml"))
 				smach.Sequence.add('LastPose', states.movement.GetLastPose(last_pose))
 				smach.Sequence.add('UI_MappingDone', states.interaction.ShowMenu('next'))
 			
