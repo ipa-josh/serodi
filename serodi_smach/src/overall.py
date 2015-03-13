@@ -30,11 +30,12 @@ def main():
         smach.StateMachine.add('Init', states.initialization.InitComponents([], sss), 
                                transitions={'succeeded':'MainMenu', 'failed':'failure'})
                                
-        smach.StateMachine.add('MainMenu', states.interaction.WaitForChoice(["canceled", "setup", "shutdown", "localization", "loc_start", "loc_kill"]), 
+        smach.StateMachine.add('MainMenu', states.interaction.WaitForChoice(["canceled", "setup", "shutdown", "localization", "scenario", "loc_start", "loc_kill"]), 
                                transitions={'canceled': 'Program_None', 'unknown': 'MainMenu',
 											'localization': 'Program_Localization',
 											'shutdown': 'Program_Shutdown',
 											'setup': 'Program_Setup',
+											'scenario': 'Program_Scenario',
 											
 											'loc_start': 'Intern_Localization_Start',
 											'loc_kill': 'Intern_Localization_Kill'
@@ -45,6 +46,8 @@ def main():
         smach.StateMachine.add('Program_Setup', states.initialization.ROSLaunch('serodi_smach','mapping.launch'), 
 						   transitions={'succeeded':'MainMenu',  'failed':'failure'})
         smach.StateMachine.add('Program_Localization', states.initialization.ROSLaunch('serodi_smach','localization.launch'), 
+						   transitions={'succeeded':'MainMenu',  'failed':'failure'})
+        smach.StateMachine.add('Program_Scenario', states.initialization.ROSLaunch('serodi_smach','scenario.launch'), 
 						   transitions={'succeeded':'MainMenu',  'failed':'failure'})
         smach.StateMachine.add('Program_Shutdown', states.initialization.System('halt'), 
 						   transitions={'succeeded':'MainMenu',  'failed':'MainMenu'})
