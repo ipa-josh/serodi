@@ -172,7 +172,7 @@ class MapNode {
 						map_recv_*radius_*map_recv_.getOccMap(), map_recv_.getUnkMap(), x,y);
 						
 		res.result.pose.position.x = x*resolution+map_recv_.getMapInfo().origin.position.x;
-		res.result.pose.position.y = y*resolution+map_recv_.getMapInfo().origin.position.y;
+		res.result.pose.position.y = (y-map_recv_.getMapInfo().height-1)*resolution+map_recv_.getMapInfo().origin.position.y;
 		res.result.pose.position.z = 0;
 		
 		res.result.pose.orientation = tf::createQuaternionMsgFromYaw( std::atan2(y-cur_y, x-cur_x) );
@@ -200,7 +200,7 @@ class MapNode {
 		if(poses.size()<1) return false;
 		res.result.pose = poses[0];
 		res.result.pose.position.x = res.result.pose.position.x*resolution+map_recv_.getMapInfo().origin.position.x;
-		res.result.pose.position.y = res.result.pose.position.y*resolution+map_recv_.getMapInfo().origin.position.y;
+		res.result.pose.position.y = (res.result.pose.position.y-map_recv_.getMapInfo().height-1)*resolution+map_recv_.getMapInfo().origin.position.y;
 		
 		return true;
 	}
@@ -218,7 +218,7 @@ public:
 			
 		ros::NodeHandle pn("~");
 		
-		pn.param<double>("radius", radius_, 1.);
+		pn.param<double>("radius", radius_, 0.5);
 		
 		pn.param<std::string>("robot_base_frame", robot_base_frame_, std::string("/base_link"));
 		pn.param<std::string>("global_frame", global_frame_, std::string("/map"));
