@@ -23,7 +23,7 @@ class FS20Driver:
 	    self.hid_device = usb.core.find(idVendor=self.mbed_vendor_id,idProduct=self.mbed_product_id)
 	    
 	    if not self.hid_device:
-		return "No device connected"
+			return "No device connected"
 	    else:
 		if self.hid_device.is_kernel_driver_active(0):
 		    try:
@@ -36,16 +36,20 @@ class FS20Driver:
 		except usb.core.USBError as e:
 		    return "Could not set configuration: %s" % str(e)
 		
-		endpoint = self.hid_device[0][(0,0)][0]  
+		self.endpoint = self.hid_device[0][(0,0)][0]  
 	    self.connected = True
 	    return None    
 
 	def send(self, housecode, addr_fs20, on):
 		#clear
-		self.hid_device.read(endpoint.bEndpointAddress, 8)
+		try:
+			self.hid_device.read(self.endpoint.bEndpointAddress, 8)
+			print "WARN: puffer not empty..."
+		except:
+			pass
 
 		self.hid_device.write(1, self.create_sendcmd(housecode, addr_fs20, on))
-		data = self.hid_device.read(endpoint.bEndpointAddress, 2000) #wait 2s
+		data = self.hid_device.read(self.endpoint.bEndpointAddress, 2000) #wait 2s
 		return self.parse_resp(data)
 
 	def code2bytes(self, housecode, exp_len):
@@ -64,8 +68,8 @@ class FS20Driver:
 		data[2] = 0xF1 #Hauscode, Adresse und Sendebefehl einmalig senden.
 
 		#HC1, HC2, Adr, Bef, Erw
-		(data[3], data[4]) = code2bytes(housecode,8)
-		data[5] = code2bytes(addr_fs20,4)
+		(data[3], data[4]) = self.code2bytes(housecode,8)
+		data[5] = self.code2bytes(addr_fs20,4)
 		data[6] = 0x11 if on else 0x00
 
 		return data
@@ -87,6 +91,9 @@ class FS20Driver:
 if __name__ == "__main__":
     vendor = 6383
     product = 57365
+    housecode = sys.argv[1]
+    addr_fs20 = sys.argv[2]
+    on = (sys.argv[3]=="True")
 
     if len(sys.argv)!=4:
 		print "[driver.py] housecode address [True/False]"
@@ -97,8 +104,6 @@ if __name__ == "__main__":
     if resp!=None:
         print resp
         exit(1)
-		
-	housecode = sys.argv[1]
-	addr_fs20 = sys.argv[2]
-	on = bool(sys.argv[3])
+	
+    print housecode, addr_fs20, on
     print driver.send(housecode, addr_fs20, on)
