@@ -202,3 +202,49 @@ class AutoLocalize(smach.State):
 			return 'failed'
 		self.sub_pa.unregister()
 		return 'success'
+
+class CheckLocalization:
+    def __init__(self):
+        self.std_dev = None
+	self.sub_pa = rospy.Subscriber("/particlecloud", geometry_msgs.msg.PoseArray, self.cb_posearray)
+        self.pub_pose = rospy.Publisher('/ui/localized', PoseWithCovarianceStamped)
+		
+    def cb_posearray(self, msg):
+		ar=[]
+		for p in msg.poses:
+			quaternion = (
+					p.orientation.x,
+					p.orientation.y,
+					p.orientation.z,
+					p.orientation.w)
+			ar.append([p.position.x,p.position.y,tf.transformations.euler_from_quaternion(quaternion)[2]])
+		ar = numpy.array(ar)
+		d = numpy.std(ar, axis=0)
+		self.std_dev = [ Math.sqrt(d[0]*d[0]+d[1]*d[1]), d[2] ]
+		
+		# convert to pose message
+		var_trans = self.std_dev[0]
+		var_rot = self.std_dev[1]
+		
+		pwcs = PoseWithCovarianceStamped()
+		pwcs.header.stamp = rospy.Time.now()
+		pwcs.header.frame_id = "/map"
+
+		pwcs.pose.pose.position.x = 0.0 #just empty...
+		pwcs.pose.pose.position.y = 0.0
+		pwcs.pose.pose.position.z = 0.0
+		q = tf.transformations.quaternion_from_euler(0, 0, 0) #just empty...
+		pwcs.pose.pose.orientation.x = q[0]
+		pwcs.pose.pose.orientation.y = q[1]
+		pwcs.pose.pose.orientation.z = q[2]
+		pwcs.pose.pose.orientation.w = q[3]
+		
+		pwcs.pose.covariance = \
+	[var_trans, 0, 0, 0, 0, 0, 
+	0, var_trans, 0 ,0 ,0 ,0,
+	0, 0, 0, 0, 0 ,0,
+	0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, var_rot]
+
+		self.pub_pose.publish(pwcs)
