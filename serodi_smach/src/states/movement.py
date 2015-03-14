@@ -64,6 +64,10 @@ class Explore(smach.State):
     def execute(self, userdata):
 		if True:
 			while True:
+				angle = random.uniform(-2.3, 2.3)
+				h = self.sss.move('base_rel', [0,0,angle])
+				h.wait()
+				
 				check = rospy.ServiceProxy('/check_closure', cob_srvs.srv.GetPoseStampedTransformed)
 				res = check( cob_srvs.srv.GetPoseStampedTransformedRequest() )
 				
@@ -79,10 +83,6 @@ class Explore(smach.State):
 					res.result.pose.orientation.w)
 				angle = tf.transformations.euler_from_quaternion(quaternion)[2]
 				h = self.sss.move('base', [x,y,angle])
-				h.wait()
-				
-				angle = random.uniform(-0.3, 0.3)
-				h = self.sss.move('base_rel', [0,0,angle])
 				h.wait()
 			
 		#except:
