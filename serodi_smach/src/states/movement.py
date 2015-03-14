@@ -62,7 +62,7 @@ class Explore(smach.State):
         self.sss = sss
 
     def execute(self, userdata):
-		if True:
+		try:
 			while True:
 				angle = random.uniform(-2.3, 2.3)
 				h = self.sss.move('base_rel', [0,0,angle])
@@ -85,8 +85,8 @@ class Explore(smach.State):
 				h = self.sss.move('base', [x,y,angle])
 				h.wait()
 			
-		#except:
-		#	return 'failed'
+		except:
+			return 'failed'
 		return 'success'	
 
 class GetLastPose(smach.State):
