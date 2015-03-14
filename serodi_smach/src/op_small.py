@@ -53,12 +53,26 @@ def main():
 				smach.Sequence.add('MoveTo_'+l, states.movement.MoveToPose(sss,light['pose']))
 				smach.Sequence.add('SetLight_'+l+"_GREEN1", states.interaction.SetLight(sss,'green'))
 				smach.Sequence.add('SetLight_'+l+"_GREEN2", states.interaction.SetLight(sss,'green', light))
-				smach.Sequence.add('Wait_'+l, states.interaction.Wait(light['waiting_time']))
+				
+			smach.StateMachine.add('OpSmall_'+l, sq, 
+                               transitions={'success':'Wait1_'+l,  'failed':'failure'})
+ 			
+ 			smach.StateMachine.add('Wait1_'+l, states.interaction.WaitForChoice(["wait"], light['waiting_time']), 
+                               transitions={'wait': 'Wait2_'+l, 'unknown': 'Wait1_'+l, 'canceled': 'OpSmall2_'+l})
+ 			smach.StateMachine.add('Wait2_'+l, states.interaction.WaitForChoice(["wait"]), 
+                               transitions={'wait': 'OpSmall2_'+l, 'unknown': 'Wait2_'+l})
+                               
+			sq = smach.Sequence(
+					outcomes = ['success','failed'],
+					connector_outcome = 'success')
+					
+			with sq:
+				#smach.Sequence.add('Wait_'+l, states.interaction.Wait(light['waiting_time']))
 				smach.Sequence.add('MoveToHome_'+l, states.movement.MoveToPose(sss,'home'))
 				smach.Sequence.add('SetLight_'+l+"_OFF1", states.interaction.SetLight(sss,[0.,0.,0.]))
 				smach.Sequence.add('SetLight_'+l+"_OFF2", states.interaction.SetLight(sss,'off', light))
 				
-			smach.StateMachine.add('OpSmall_'+l, sq, 
+			smach.StateMachine.add('OpSmall2_'+l, sq, 
                                transitions={'success':'success',  'failed':'failure'})
                                             
     # Execute SMACH plan
