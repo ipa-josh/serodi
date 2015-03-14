@@ -27,6 +27,8 @@ def main():
 
     # Open the container
     with sm:
+        smach.StateMachine.add('WaitBeforeInit', states.interaction.Wait(20), 
+                               transitions={'success':'Init', 'failed':'Init'})
         smach.StateMachine.add('Init', states.initialization.InitComponents([], sss), 
                                transitions={'succeeded':'MainMenu', 'failed':'failure'})
                                
