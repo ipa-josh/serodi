@@ -6,6 +6,7 @@ import cob_srvs.srv
 import sensor_msgs.msg
 import cob_relayboard.msg
 import time
+import states.movement 
 
 global sub_js
 
@@ -37,4 +38,5 @@ if __name__ == "__main__":
 	rospy.init_node('background', anonymous=True)
 	rospy.Subscriber("/emergency", cob_relayboard.msg.EmergencyStopState, cb_em, 1)
 	sub_js = rospy.Subscriber("/joint_states", sensor_msgs.msg.JointState, cb_js, 1)
+	chk_loc = states.movement.CheckLocalization()
 	rospy.spin()
