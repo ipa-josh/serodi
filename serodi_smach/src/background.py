@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys
+import sys, os
 import rospy
 import cob_srvs.srv
 import sensor_msgs.msg
@@ -30,6 +30,8 @@ def cb_js(data):
 	#spawn here
 	global sub_js
 	sub_js.unregister()
+	
+	os.system("roslaunch serodi_mapping spawner.launch &")
 
 if __name__ == "__main__":
 	rospy.init_node('background', anonymous=True)
