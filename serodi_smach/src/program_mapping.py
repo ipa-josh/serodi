@@ -43,10 +43,25 @@ def main(do_setup):
 			
 			smach.Sequence.add('Localization1', states.interaction.SendChoice('loc_start'))
 			smach.Sequence.add('WaitL', states.interaction.Wait(10))
-			if do_setup:
-				smach.Sequence.add('Localization2', states.movement.AutoLocalize(sss, last_pose))
-			else:
-				smach.Sequence.add('Localization2', states.movement.AutoLocalize(sss))
+		smach.StateMachine.add('Main', sq, 
+						   transitions={'success':'Localization2',  'failed':'failure'})
+			
+		if do_setup:
+			smach.StateMachine.add('Localization2', states.movement.AutoLocalize(sss, last_pose),
+				transitions={'success': 'Main2', 'failed': 'failure'})
+		else:
+ 			smach.StateMachine.add('Localization2', states.interaction.WaitForChoice(["loc_pos_global","loc_pos_zero"]), 
+                               transitions={'loc_pos_global': 'Localization2_Global', 'unknown': 'Localization2', 'loc_pos_zero': 'Localization2_Zero'})
+                               
+			smach.Sequence.add('Localization2_Global', states.movement.AutoLocalize(sss, [0,0,0]),
+				transitions={'success': 'Main2', 'failed': 'failure'})
+			smach.Sequence.add('Localization2_Zero', states.movement.AutoLocalize(sss),
+				transitions={'success': 'Main2', 'failed': 'failure'})
+				
+		sq = smach.Sequence(
+				outcomes = ['success','failed'],
+				connector_outcome = 'success')
+		with sq:
 			smach.Sequence.add('UI_LocalizationDone', states.interaction.ShowMenu('next'))
 			
 			if do_setup:
@@ -58,7 +73,7 @@ def main(do_setup):
 				smach.Sequence.add('SaveLightPoses', states.interaction.SaveYaml('op_small', 'config/op_small.yaml'))
 				smach.Sequence.add('UI_SetLightPosesDone', states.interaction.ShowMenu('next'))
 			
-		smach.StateMachine.add('Main', sq, 
+		smach.StateMachine.add('Main2', sq, 
 						   transitions={'success':'success',  'failed':'failure'})
                                             
     # Execute SMACH plan
