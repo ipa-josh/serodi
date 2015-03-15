@@ -84,7 +84,7 @@
 				}
 				if(currentIndex!=newIndex) {
 					map.clearPoses();
-					if(newIndex==4) map.addPose(0,0,0, "");
+					//if(newIndex==4) map.addPose(0,0,0, "");
 				}
 				
 				return map.poses.length!=known_lights.length;
@@ -186,6 +186,14 @@
 	});
 	$("#start_scenario").click(function() {
 		sendChoice("scenario");
+		$( "#dialog_scenario" ).dialog("open");
+	});
+	$("#start_scenario_operation").click(function() {
+		sendChoice("scenario_operation");
+		$( "#dialog_scenario" ).dialog("open");
+	});
+	$("#start_scenario_patrol").click(function() {
+		sendChoice("scenario_patrol");
 		$( "#dialog_scenario" ).dialog("open");
 	});
 	$("#start_shutdown").click(function() {
@@ -446,10 +454,16 @@
     <p>
     Starts the scenario: drive two times the patrol path, then a random light is ringing, and then again two times the patrol path<br>
     <b>Attention: </b>Please keep time in mind. The battery is running out after 30 minutes!
-    suscipit faucibus urna.
     </p>
     <p>
-    <button style="float:right;" id="start_scenario">Start</button>
+    	<b>Start all:</b> Starts patrol (4x) + operation (1x)<br />
+    	<b>Start patrol:</b> Starts patrol (1x)<br />
+    	<b>Start operation:</b> Starts operation (1x)<br />
+    </p>
+    <p>
+    <button style="float:right;" id="start_scenario">Start all</button>
+    <button style="float:right;" id="start_scenario_patrol">Start patrol</button>
+    <button style="float:right;" id="start_scenario_operatoin">Start operation</button>
     </p>
   </div>
   <h3>Localization</h3>
