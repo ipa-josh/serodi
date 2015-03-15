@@ -5,7 +5,7 @@ import rospy
 import smach
 import smach_ros
 from simple_script_server import script
-import random
+import random, math
 
 # Contains following states:
 # - MoveOnPath
@@ -27,6 +27,9 @@ class MoveOnPath(smach.State):
     def execute(self, userdata):
 		if reverse:
 			p = reversed(self.path)
+			for i in xrange(len(p)):
+				p[i][2] = p[i][2]+math.pi
+				if p[i][2]>2*math.pi: p[i][2]-=2*math.pi
 		else:
 			p = self.path
 		for pose in p:
