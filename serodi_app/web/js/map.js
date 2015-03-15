@@ -5,7 +5,7 @@ function Map(src, parent, ros) {
 	this.ros = ros;
 	this.map_info;
 	this.poses = [];
-	self.pose_var = [0,0];
+	this.pose_var = [0,0];
 	this.active_pose = false;
 	this.touchable = 'createTouch' in document;
 	
@@ -101,7 +101,28 @@ function Map(src, parent, ros) {
 		if(this.robot_pose && this.map_info) {
 			var p = this.robot_pose;
 			var pos = this.pose2img(p);
+
+			//draw var. trans.
+			var grd=ctx.createRadialGradient(pos.x, pos.y, 1, pos.x, pos.y, this.pose_var/this.map_info.resolution);
+			grd.addColorStop(0,"blue");
+			grd.addColorStop(1,"transparent");
+			
+			this.c.beginPath(); 
+			this.c.fillStyle = grd;
+			this.c.arc( pos.x, pos.y, this.pose_var[0]/this.map_info.resolution,0, Math.PI*2,true); 
+			this.c.stroke();
+
+			//draw var. rot.
+			var grd=ctx.createRadialGradient(pos.x, pos.y, 1, pos.x, pos.y, this.pose_var/this.map_info.resolution);
+			grd.addColorStop(0,"red");
+			grd.addColorStop(1,"transparent");
+			
+			this.c.beginPath(); 
+			this.c.fillStyle = grd;
+			this.c.arc( pos.x, pos.y, this.pose_var/this.map_info.resolution,pos.yaw-this.pose_var[1],pos.yaw+this.pose_var[1],true); 
+			this.c.stroke();
 		
+			//draw robot
 			this.c.beginPath(); 
 			this.c.strokeStyle = "#43D729"; 
 			this.c.lineWidth = RADIUS;
