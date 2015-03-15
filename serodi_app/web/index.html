@@ -300,6 +300,7 @@
 	
 	
 <div id="dialog_log" title="Log">
+	Log file of current SMACH states output:<br />
 	<table id="log_tbl" class="display" cellspacing="0" width="100%">
         <thead>
             <tr>
@@ -327,35 +328,36 @@
     <h3>Warnings</h3>
     <section>
         <p>
-			Text <br />
-			<button id="setup_0_confirm">Ok</button>
+		<b>Attention:</b> The robot is going to move on itself. Please keep watch! Keep the emergency stop in your hand! <br />
+		<b>Attention:</b> This will override all previous settings! <br />
+		<button id="setup_0_confirm">Ok</button>
         </p>
     </section>
     <h3>Mapping...</h3>
     <section>
-        <p>Please wait...</p>
+        <p>Please wait while the robot is moving around and mapping the environment. This will stop automatically. Otherwise you can cancel the action by closing the dialog.</p>
     </section>
     <h3>Localize...</h3>
     <section>
-        <p>Please wait...</p>
+        <p>Please wait while the robot is moving around and localizing itslef in the environment. This will stop automatically. Otherwise you can cancel the action by closing the dialog.</p>
     </section>
     <h3>Set Patrol Path</h3>
     <section>
-        <p>The next and previous buttons help you to navigate through your content.</p>
+        <p>Move the robot to the desired position and click on "+". The poses (with numbers) are the patrol path which will be used in the scenario.</p>
         <p>
 			<button id="setup_3_confirm">Ok</button>
         </p>
     </section>
     <h3>Set Poses of Lights</h3>
     <section>
-        <p>The next and previous buttons help you to navigate through your content.</p>
+        <p>Move the robot to the light which is turned on and click on "+".</p>
         <p>
 			<button id="setup_4_confirm">Ok</button>
         </p>
     </section>
     <h3>Done!</h3>
     <section>
-        <p>The next and previous buttons help you to navigate through your content.</p>
+        <p>Setup finished. Saved everything. Localization or a restart is not necessary. Close the dialog.</p>
     </section>
 </div>
 </div>
@@ -365,12 +367,16 @@
     <h3>Warnings</h3>
     <section>
         <p>
-		Text <br />
+		<b>Attention:</b> The robot is going to move on itself. Please keep watch! Keep the emergency stop in your hand! <br />
 		<button id="localization_0_confirm">Ok</button>
         </p>
     </section>
     <h3>Choice...</h3>
     <section>
+    	<p>
+    		Please choose if you want to use global localization or a defined staring position.
+    		The starting position is the first position at mapping. This is faster and more safe (if the initial position is correct!).
+    	</p>
         <p>
 		<button id="localization_2_global">Global localizaton</button>
 		<button id="localization_2_zero">Localization with starting position</button>
@@ -378,11 +384,11 @@
     </section>
     <h3>Localize...</h3>
     <section>
-        <p>Please wait...</p>
+        <p>Please wait while the robot is moving around and localizing itslef in the environment. This will stop automatically. Otherwise you can cancel the action by closing the dialog.</p>
     </section>
     <h3>Done!</h3>
     <section>
-        <p>The next and previous buttons help you to navigate through your content.</p>
+        <p>The robot is localized now. Close the dialog.</p>
     </section>
 </div>
 </div>
@@ -393,6 +399,7 @@
 	
 <div id="dialog_scenario" title="Pflegewagenverwaltung">
 <p>
+	If the green light is on you can pause the scenario.
 	<button id="scenario_wait">Pause/Run</button>
 </p>
 <div class="ui-widget ui-helper-clearfix">
