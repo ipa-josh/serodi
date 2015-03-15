@@ -5,6 +5,7 @@ function Map(src, parent, ros) {
 	this.ros = ros;
 	this.map_info;
 	this.poses = [];
+	self.pose_var = [0,0];
 	this.active_pose = false;
 	this.touchable = 'createTouch' in document;
 	
@@ -146,6 +147,18 @@ function Map(src, parent, ros) {
 		self.map_info = message;
 		self.update();
 		console.log("map_update ",self.map_info);
+	});
+	
+	var sub_localized = new ROSLIB.Topic({
+		ros : ros,
+		name : '/ui/localized',
+		messageType : 'geometry_msgs/PoseWithCovarianceStamped'
+	});
+	// Then we add a callback to be called every time a message is published on this topic.
+	sub_localized.subscribe(function(pwcs) {
+		self.pose_var =  [pwcs.pose.covariance[0], pwcs.pose.covariance[25]]
+		//self.update();
+		console.log("localized ",self.pose_var);
 	});
 	
 	// TF Client
