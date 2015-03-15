@@ -166,13 +166,13 @@ class MapNode {
 		const double resolution = map_recv_.getMapInfo().resolution;
 		int x,y;
 		const int cur_x = boost::math::round( (pose.getOrigin().x()-map_recv_.getMapInfo().origin.position.x)/resolution);
-		const int cur_y = boost::math::round( (pose.getOrigin().y()-map_recv_.getMapInfo().origin.position.y)/resolution);
+		const int cur_y = boost::math::round( map_recv_.getMapInfo().height-(pose.getOrigin().y()-map_recv_.getMapInfo().origin.position.y)/resolution);
 		res.success =
 		check_closure(	cur_x, cur_y,
 						map_recv_*radius_*map_recv_.getOccMap(), map_recv_.getUnkMap(), x,y);
 						
 		res.result.pose.position.x = x*resolution+map_recv_.getMapInfo().origin.position.x;
-		res.result.pose.position.y = (y-map_recv_.getMapInfo().height-1)*resolution+map_recv_.getMapInfo().origin.position.y;
+		res.result.pose.position.y = (map_recv_.getMapInfo().height-1-y)*resolution+map_recv_.getMapInfo().origin.position.y;
 		res.result.pose.position.z = 0;
 		
 		res.result.pose.orientation = tf::createQuaternionMsgFromYaw( std::atan2(y-cur_y, x-cur_x) );
@@ -194,13 +194,13 @@ class MapNode {
 		std::vector<geometry_msgs::Pose> poses;
 		
 		res.success = vis_graph(boost::math::round( (pose.getOrigin().x()-map_recv_.getMapInfo().origin.position.x)/resolution),
-								boost::math::round( (pose.getOrigin().y()-map_recv_.getMapInfo().origin.position.y)/resolution),
+								boost::math::round( map_recv_.getMapInfo().height-(pose.getOrigin().y()-map_recv_.getMapInfo().origin.position.y)/resolution),
 					tf::getYaw(pose.getRotation()), map_recv_*radius_*map_recv_.getOccMap(), (int)(radius_/resolution+0.99), 0.8, 1, poses);
 					
 		if(poses.size()<1) return false;
 		res.result.pose = poses[0];
 		res.result.pose.position.x = res.result.pose.position.x*resolution+map_recv_.getMapInfo().origin.position.x;
-		res.result.pose.position.y = (res.result.pose.position.y-map_recv_.getMapInfo().height-1)*resolution+map_recv_.getMapInfo().origin.position.y;
+		res.result.pose.position.y = (map_recv_.getMapInfo().height-1-res.result.pose.position.y)*resolution+map_recv_.getMapInfo().origin.position.y;
 		
 		return true;
 	}
