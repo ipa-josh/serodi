@@ -82,7 +82,10 @@
 						$("setup_3_confirm").button( "diabled" );
 					}
 				}
-				if(currentIndex!=newIndex) map.clearPoses();
+				if(currentIndex!=newIndex) {
+					map.clearPoses();
+					if(newIndex==4) map.addPose(0,0,0, "");
+				}
 				
 				return map.poses.length!=known_lights.length;
 			}
