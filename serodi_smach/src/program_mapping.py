@@ -52,10 +52,15 @@ def main(do_setup):
 		else:
  			smach.StateMachine.add('Localization2', states.interaction.WaitForChoice(["loc_pos_global","loc_pos_zero"]), 
                                transitions={'loc_pos_global': 'Localization2_Global', 'unknown': 'Localization2', 'loc_pos_zero': 'Localization2_Zero'})
-                               
-			smach.Sequence.add('Localization2_Global', states.movement.AutoLocalize(sss, [0,0,0]),
+                        
+			smach.StateMachine.add('Localization2_Global', states.interaction.ShowMenu('next'),
+				transitions={'success': 'Localization2_Global2', 'failed': 'failure'})
+			smach.StateMachine.add('Localization2_Global2', states.movement.AutoLocalize(sss, [0,0,0]),
 				transitions={'success': 'Main2', 'failed': 'failure'})
-			smach.Sequence.add('Localization2_Zero', states.movement.AutoLocalize(sss),
+				
+			smach.StateMachine.add('Localization2_Zero', states.interaction.ShowMenu('next'),
+				transitions={'success': 'Localization2_Zero2', 'failed': 'failure'})
+			smach.StateMachine.add('Localization2_Zero2', states.movement.AutoLocalize(sss),
 				transitions={'success': 'Main2', 'failed': 'failure'})
 				
 		sq = smach.Sequence(
