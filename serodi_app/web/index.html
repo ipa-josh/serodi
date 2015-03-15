@@ -157,6 +157,9 @@
 	$( "#dialog_log" ).dialog({autoOpen: false,
 		width: 800
 	});
+	$("#scenario_wait").click(function() {
+		  sendChoice("wait");
+	});
 	$( "#dialog-confirm" ).dialog({autoOpen: false,
       resizable: false,
       height:230,
@@ -389,6 +392,9 @@
 </div>
 	
 <div id="dialog_scenario" title="Pflegewagenverwaltung">
+<p>
+	<button id="scenario_wait">Pause/Run</button>
+</p>
 <div class="ui-widget ui-helper-clearfix">
  
 <ul id="gallery" class="gallery ui-helper-reset ui-helper-clearfix">
