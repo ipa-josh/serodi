@@ -74,7 +74,7 @@ function Map(src, parent, ros) {
 			var ox = this.map_info.origin.position.x;
 			var oy = this.map_info.origin.position.y;
 			
-			return {x: (p[0]-ox)/r, y: this.map_info.height-(p[1]-oy)/r, yaw: p[2]};
+			return {x: (p[0]-ox)/r, y: this.map_info.height-1-(p[1]-oy)/r, yaw: p[2]};
 	}
 	
 	this.draw = function() {
