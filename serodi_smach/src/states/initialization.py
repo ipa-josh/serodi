@@ -4,7 +4,6 @@ import roslib; roslib.load_manifest('serodi_smach')
 import rospy
 import smach
 import smach_ros
-from simple_script_server import script
 
 # Contains following states:
 # - InitComponents
@@ -73,7 +72,7 @@ class ROSKill(smach.State):
     def execute(self, userdata):
 		if self.package==None:
 			for k in userdata.running_processes:
-				if k in launchfile: continue
+				if k in self.launchfile: continue
 				userdata.running_processes[k].terminate()
 				userdata.running_processes.pop(k)
 		elif hasattr(userdata,'running_processes') and self.package+' '+self.launchfile in userdata.running_processes:
