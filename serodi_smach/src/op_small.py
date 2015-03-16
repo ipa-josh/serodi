@@ -32,7 +32,7 @@ def main():
         # wait for X secs.
         # SetLight(off)
         
-        smach.StateMachine.add('LoadYaml', states.interaction.LoadYaml('op_small', 'config/op_small.yaml', sm), 
+        smach.StateMachine.add('LoadYaml', states.interaction.LoadYaml('op_small', '../config/op_small.yaml', sm), 
                                transitions={'success':'SelectLight', 'failed':'failure'})
 
         #select random light
