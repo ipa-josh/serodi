@@ -308,7 +308,8 @@ class SetLight(smach.State):
 				smach.logerr(res.error_msg)
 				return 'failed'
 		else:
-			self.sss.set_light(self.color)
+			print self.color
+			self.sss.set_light("light_base", self.color)
 			
 		return 'success'
 
