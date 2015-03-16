@@ -272,7 +272,7 @@ class Wait(smach.State):
 
     def execute(self, userdata):
 		print "sleeping for "+str(self.time)+" secs."
-		rospy.sleep(self.time)
+		time.sleep(self.time)
 		return 'success'
 
 
