@@ -145,6 +145,20 @@ class MapNode {
 	ros::ServiceServer srv_check_, srv_free_;	
 	tf::TransformListener tf_;
 	
+	void pose2map(const double px, const double py, int &mx, int &my) const {
+		const double resolution = map_recv_.getMapInfo().resolution;
+		
+		my = boost::math::round( (px-map_recv_.getMapInfo().origin.position.x)/resolution);
+		mx = boost::math::round( map_recv_.getMapInfo().height-1-(py-map_recv_.getMapInfo().origin.position.y)/resolution);
+	}
+	
+	void map2pose(const int mx, const int my, double &px, double &py) const {
+		const double resolution = map_recv_.getMapInfo().resolution;
+		
+		px = my*resolution+map_recv_.getMapInfo().origin.position.x;
+		py = (map_recv_.getMapInfo().height-1-mx)*resolution+map_recv_.getMapInfo().origin.position.y;
+	}
+	
 	void on_map_update() {
 		//save
 		cv::imwrite(map_dir_+"/map_occ.png", map_recv_.getOccMap());
@@ -163,18 +177,16 @@ class MapNode {
 			return true;
 		}
 		
-		const double resolution = map_recv_.getMapInfo().resolution;
 		int x,y;
-		const int cur_x = boost::math::round( (pose.getOrigin().x()-map_recv_.getMapInfo().origin.position.x)/resolution);
-		const int cur_y = boost::math::round( map_recv_.getMapInfo().height-1-(pose.getOrigin().y()-map_recv_.getMapInfo().origin.position.y)/resolution);
+		int cur_x, cur_y;
+		pose2map(pose.getOrigin().x(), pose.getOrigin().y(), cur_x, cur_y);
 		res.success =
 		check_closure(	cur_x, cur_y,
 						map_recv_*radius_*map_recv_.getOccMap(), map_recv_.getUnkMap(), x,y);
 		
 		cv::imwrite(map_dir_+"/dbg_map_occ_inflated.png", map_recv_*radius_*map_recv_.getOccMap());
 						
-		res.result.pose.position.x = x*resolution+map_recv_.getMapInfo().origin.position.x;
-		res.result.pose.position.y = (map_recv_.getMapInfo().height-1-y)*resolution+map_recv_.getMapInfo().origin.position.y;
+		map2pose(x,y, res.result.pose.position.x, res.result.pose.position.y);
 		res.result.pose.position.z = 0;
 		
 		res.result.pose.orientation = tf::createQuaternionMsgFromYaw( std::atan2(y-cur_y, x-cur_x) );
@@ -192,17 +204,18 @@ class MapNode {
 			return true;
 		}
 		
-		const double resolution = map_recv_.getMapInfo().resolution;
 		std::vector<geometry_msgs::Pose> poses;
+		const double resolution = map_recv_.getMapInfo().resolution;
 		
-		res.success = vis_graph(boost::math::round( (pose.getOrigin().x()-map_recv_.getMapInfo().origin.position.x)/resolution),
-								boost::math::round( map_recv_.getMapInfo().height-1-(pose.getOrigin().y()-map_recv_.getMapInfo().origin.position.y)/resolution),
+		int cur_x, cur_y;
+		pose2map(pose.getOrigin().x(), pose.getOrigin().y(), cur_x, cur_y);
+		
+		res.success = vis_graph(cur_x, cur_y,
 					tf::getYaw(pose.getRotation()), map_recv_*radius_*map_recv_.getOccMap(), (int)(radius_/resolution+0.99), 0.8, 1, poses);
 					
 		if(poses.size()<1) return false;
 		res.result.pose = poses[0];
-		res.result.pose.position.x = res.result.pose.position.x*resolution+map_recv_.getMapInfo().origin.position.x;
-		res.result.pose.position.y = (map_recv_.getMapInfo().height-1-res.result.pose.position.y)*resolution+map_recv_.getMapInfo().origin.position.y;
+		map2pose(res.result.pose.position.x, res.result.pose.position.y, res.result.pose.position.x, res.result.pose.position.y);
 		
 		return true;
 	}
