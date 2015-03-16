@@ -5,15 +5,15 @@ import rospy
 import smach
 import smach_ros
 
-from simple_script_server import script
+from simple_script_server import simple_script_server
 
 import states.interaction
 import states.movement
 
 # main
 def main():
-    #rospy.init_node('serodi_smach_op_small')
-    sss = script()
+    sss = simple_script_server()
+    rospy.init_node('serodi_smach_op_patrol')
 
     # Create a SMACH state machine
     logger = states.interaction.SMACHCustomLogger()
@@ -25,7 +25,7 @@ def main():
     with sm:        
         # just move on path (poses)
         
-        smach.StateMachine.add('LoadYaml', states.interaction.LoadYaml('op_patrol', 'config/op_patrol.yaml', sm), 
+        smach.StateMachine.add('LoadYaml', states.interaction.LoadYaml('op_patrol', '../config/op_patrol.yaml', sm), 
                                transitions={'success':'Patrol1',  'failed':'failure'})
 			
         smach.StateMachine.add('Patrol1',  states.movement.MoveOnPath(sss,sm.userdata.data['op_patrol']['path']),
