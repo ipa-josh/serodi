@@ -67,8 +67,10 @@ class Explore(smach.State):
     def execute(self, userdata):
 		try:
 			while True:
-				angle = random.uniform(-2.3, 2.3)
-				h = self.sss.move('base_rel', [0,0,angle])
+				angle=0
+				while abs(angle)<1.:
+					angle = random.uniform(-2.3, 2.3)
+				h = self.sss.move_base_rel('base', [0,0,angle])
 				h.wait()
 				
 				check = rospy.ServiceProxy('/check_closure', cob_srvs.srv.GetPoseStampedTransformed)
@@ -120,7 +122,7 @@ class AutoLocalize(smach.State):
     def __init__(self, sss, init_pose=None):
         smach.State.__init__(self, outcomes=['success', 'failed'])
         self.sss = sss
-        self.pub_pose = rospy.Publisher('/initialpose', PoseWithCovarianceStamped)
+        self.pub_pose = rospy.Publisher('/initialpose', PoseWithCovarianceStamped, queue_size=10)
         self.init_pose = init_pose
         self.std_dev = None
 		
@@ -210,7 +212,7 @@ class CheckLocalization:
     def __init__(self):
         self.std_dev = None
 	self.sub_pa = rospy.Subscriber("/particlecloud", geometry_msgs.msg.PoseArray, self.cb_posearray)
-        self.pub_pose = rospy.Publisher('/ui/localized', PoseWithCovarianceStamped)
+        self.pub_pose = rospy.Publisher('/ui/localized', PoseWithCovarianceStamped, queue_size=10)
 		
     def cb_posearray(self, msg):
 		ar=[]
