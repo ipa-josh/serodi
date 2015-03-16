@@ -16,6 +16,7 @@ def main():
     sss = script()
 
     # Create a SMACH state machine
+    logger = states.interaction.SMACHCustomLogger()
     sm = smach.StateMachine(outcomes=['success', 'failure'])
     
     sm.userdata.data = {'op_small':{}}
