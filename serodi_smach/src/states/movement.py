@@ -68,8 +68,8 @@ class Explore(smach.State):
 		try:
 			while True:
 				angle=0
-				while abs(angle)<1.:
-					angle = random.uniform(-2.3, 2.3)
+				while abs(angle)<0.1:
+					angle = random.uniform(-1., 1.)
 				h = self.sss.move_base_rel('base', [0,0,angle])
 				h.wait()
 				
