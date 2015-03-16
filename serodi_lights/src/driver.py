@@ -42,14 +42,14 @@ class FS20Driver:
 
 	def send(self, housecode, addr_fs20, on):
 		#clear
-		try:
+		'''try:
 			self.hid_device.read(self.endpoint.bEndpointAddress, 8)
 			print "WARN: puffer not empty..."
 		except:
-			pass
+			pass'''
 
 		self.hid_device.write(1, self.create_sendcmd(housecode, addr_fs20, on))
-		data = self.hid_device.read(self.endpoint.bEndpointAddress, 2000) #wait 2s
+		data = self.hid_device.read(self.endpoint.bEndpointAddress, 200) #wait 0.2s
 		return self.parse_resp(data)
 
 	def code2bytes(self, housecode, exp_len):
