@@ -35,7 +35,7 @@ def main(do_setup):
 			smach.Sequence.add('StopLocalization', states.interaction.SendChoice('loc_kill'))
 			smach.Sequence.add('WaitM1', states.interaction.Wait(10))
 			if do_setup:
-				smach.Sequence.add('Mapping1', states.initialization.ROSLaunch('cob_navigation_slam','2dnav_ros_dwa.launch'))
+				smach.Sequence.add('Mapping1', states.initialization.ROSLaunch('serodi_mapping','2dnav_ros_dwa.launch'))
 				smach.Sequence.add('WaitM2', states.interaction.Wait(10))
 				smach.Sequence.add('Mapping2', states.movement.Explore(sss))
 				smach.Sequence.add('SaveMap', states.initialization.System("rosrun map_server map_server ~/map.yaml"))
