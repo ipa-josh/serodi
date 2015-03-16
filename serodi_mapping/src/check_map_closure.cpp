@@ -170,6 +170,8 @@ class MapNode {
 		res.success =
 		check_closure(	cur_x, cur_y,
 						map_recv_*radius_*map_recv_.getOccMap(), map_recv_.getUnkMap(), x,y);
+		
+		cv::imwrite(map_dir_+"/dbg_map_occ_inflated.png", map_recv_*radius_*map_recv_.getOccMap());
 						
 		res.result.pose.position.x = x*resolution+map_recv_.getMapInfo().origin.position.x;
 		res.result.pose.position.y = (map_recv_.getMapInfo().height-1-y)*resolution+map_recv_.getMapInfo().origin.position.y;
