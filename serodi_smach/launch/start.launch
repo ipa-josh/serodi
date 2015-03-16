@@ -8,5 +8,5 @@
   </node>
   
   <node name="tf2_web_republisher" pkg="tf2_web_republisher" type="tf2_web_republisher" />
-  <node name="smach_overall" pkg="serodi_smach" type="overall.py" output="screen" />
+  <node name="smach_overall" pkg="serodi_smach" type="overall.py" output="screen" cwd="node"/>
 </launch>
