@@ -1,0 +1,6 @@
+<launch>
+
+	<node ns="base" name="base_odometry_controller_spawner" pkg="controller_manager" type="spawner" args="odom_controller" respawn="true" />
+	<node ns="base" name="base_twist_controller_spawner" pkg="controller_manager" type="spawner" args="twist_controller" respawn="true" />
+
+</launch>
