@@ -1,0 +1,2 @@
+ATTRS{idVendor}=="18ef", SUBSYSTEM=="usb", ACTION=="add", MODE="666", GROUP="plugdev", ENV{ID_VENDOR_ID}="$attr{idVendor}", ENV{ID_MODEL_ID}="$attr{idProduct}", ENV{ID_SERIAL_SHORT}="$attr{serial}"
+
