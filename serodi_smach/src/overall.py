@@ -28,7 +28,7 @@ def main():
     # Open the container
     with sm:
         smach.StateMachine.add('WaitBeforeInit', states.interaction.Wait(20), 
-                               transitions={'success':'Init', 'failed':'Init'})
+                               transitions={'success':'Init'})
         smach.StateMachine.add('Init', states.initialization.InitComponents([], sss), 
                                transitions={'succeeded':'MainMenu', 'failed':'failure'})
                                
@@ -46,16 +46,16 @@ def main():
         smach.StateMachine.add('Program_None', states.initialization.ROSKill(None, [LOC_PKG+' '+LOC_BIN] ), 
 						   transitions={'pass':'MainMenu'})
         smach.StateMachine.add('Program_Setup', states.initialization.ROSLaunch('serodi_smach','mapping.launch'), 
-						   transitions={'succeeded':'MainMenu',  'failed':'failure'})
+						   transitions={'success':'MainMenu',  'failed':'failure'})
         smach.StateMachine.add('Program_Localization', states.initialization.ROSLaunch('serodi_smach','localization.launch'), 
-						   transitions={'succeeded':'MainMenu',  'failed':'failure'})
+						   transitions={'success':'MainMenu',  'failed':'failure'})
         smach.StateMachine.add('Program_Scenario', states.initialization.ROSLaunch('serodi_smach','scenario.launch'), 
-						   transitions={'succeeded':'MainMenu',  'failed':'failure'})
+						   transitions={'success':'MainMenu',  'failed':'failure'})
         smach.StateMachine.add('Program_Shutdown', states.initialization.System('halt'), 
-						   transitions={'succeeded':'MainMenu',  'failed':'MainMenu'})
+						   transitions={'success':'MainMenu',  'failed':'MainMenu'})
 						   
         smach.StateMachine.add('Intern_Localization_Start', states.initialization.ROSLaunch(LOC_PKG,LOC_BIN), 
-						   transitions={'succeeded':'MainMenu',  'failed':'MainMenu'})
+						   transitions={'success':'MainMenu',  'failed':'MainMenu'})
         smach.StateMachine.add('Intern_Localization_Kill', states.initialization.ROSKill(LOC_PKG,LOC_BIN), 
 						   transitions={'pass':'MainMenu'})
                                             

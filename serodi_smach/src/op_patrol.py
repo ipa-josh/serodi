@@ -26,18 +26,15 @@ def main():
         # just move on path (poses)
         
         smach.StateMachine.add('LoadYaml', states.interaction.LoadYaml('op_patrol', 'config/op_patrol.yaml', sm), 
-                               transitions={'pass':'Patrol'})
+                               transitions={'success':'Patrol1',  'failed':'failure'})
 			
         smach.StateMachine.add('Patrol1',  states.movement.MoveOnPath(sss,sm.userdata.data['op_patrol']['path']),
 			transitions={'success':'Patrol2',  'failed':'failure'})
 			
         smach.StateMachine.add('Patrol2',  states.movement.MoveOnPath(sss,sm.userdata.data['op_patrol']['path'], True),
-			transitions={'success':'success',  'failed':'failure'})
+			transitions={'success':'MoveToHome',  'failed':'failure'})
 			
-        smach.StateMachine.add('Patrol2',  states.movement.MoveOnPath(sss,sm.userdata.data['op_patrol']['path'], True),
-			transitions={'success':'success',  'failed':'failure'})
-			
-        smach.StateMachine.add('MoveToHome_',  states.movement.MoveToPose(sss,'home'),
+        smach.StateMachine.add('MoveToHome',  states.movement.MoveToPose(sss,'home'),
 			transitions={'success':'success',  'failed':'failure'})
                                             
     # Execute SMACH plan

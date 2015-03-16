@@ -22,6 +22,7 @@ def main(do_setup):
     sm = smach.StateMachine(outcomes=['success', 'failure'])
     
     sm.userdata.data = {'op_small':{}, 'op_patrol':{}}
+    sm.userdata.running_processes = {}
 
     # Open the container
     with sm:
@@ -54,12 +55,12 @@ def main(do_setup):
                                transitions={'loc_pos_global': 'Localization2_Global', 'unknown': 'Localization2', 'loc_pos_zero': 'Localization2_Zero'})
                         
 			smach.StateMachine.add('Localization2_Global', states.interaction.ShowMenu('next'),
-				transitions={'success': 'Localization2_Global2', 'failed': 'failure'})
+				transitions={'success': 'Localization2_Global2'})
 			smach.StateMachine.add('Localization2_Global2', states.movement.AutoLocalize(sss, [0,0,0]),
 				transitions={'success': 'Main2', 'failed': 'failure'})
 				
 			smach.StateMachine.add('Localization2_Zero', states.interaction.ShowMenu('next'),
-				transitions={'success': 'Localization2_Zero2', 'failed': 'failure'})
+				transitions={'success': 'Localization2_Zero2'})
 			smach.StateMachine.add('Localization2_Zero2', states.movement.AutoLocalize(sss),
 				transitions={'success': 'Main2', 'failed': 'failure'})
 				

@@ -5,15 +5,15 @@ import rospy
 import smach
 import smach_ros
 
-from simple_script_server import script
+from simple_script_server import simple_script_server
 
 import states.interaction
 import states.movement
 
 # main
 def main():
-    #rospy.init_node('serodi_smach_op_small')
-    sss = script()
+    sss = simple_script_server()
+    rospy.init_node('serodi_smach_op_small')
 
     # Create a SMACH state machine
     logger = states.interaction.SMACHCustomLogger()
@@ -33,7 +33,7 @@ def main():
         # SetLight(off)
         
         smach.StateMachine.add('LoadYaml', states.interaction.LoadYaml('op_small', 'config/op_small.yaml', sm), 
-                               transitions={'pass':'SelectLight'})
+                               transitions={'success':'SelectLight', 'failed':'failure'})
 
         #select random light
         transitions={'none':'success'}
@@ -74,7 +74,7 @@ def main():
 				smach.Sequence.add('SetLight_'+l+"_OFF2", states.interaction.SetLight(sss,'off', light))
 				
 			smach.StateMachine.add('OpSmall2_'+l, sq, 
-                               transitions={'success':'success',  'failed':'failure'})
+                               transitions={'success':'success', 'failed':'failure'})
                                             
     # Execute SMACH plan
     outcome = sm.execute()

@@ -219,18 +219,21 @@ class SaveYaml(smach.State):
 		
 class LoadYaml(smach.State):
     def __init__(self, obj, filename, sm=None):
-        smach.State.__init__(self, outcomes=['pass'], input_keys=['data'], output_keys=['data'])
+        smach.State.__init__(self, outcomes=['success','failed'], input_keys=['data'], output_keys=['data'])
         self.obj = obj
         self.filename = filename
         
         if sm!=None:
-			self.execute(sm.userdata)
+			if self.execute(sm.userdata)!='success': raise Exception("could not load file: "+filename)
 
     def execute(self, userdata):
-		f = open(self.filename,'r')
-		userdata.data[self.obj] =  yaml.load(f.read())
-		f.close()
-		return 'pass'
+		try:
+			f = open(self.filename,'r')
+			userdata.data[self.obj] =  yaml.load(f.read())
+			f.close()
+		except:
+			return 'failed'
+		return 'success'
         
 class IterateVar(smach.State):
     def __init__(self, dest_name):
@@ -305,9 +308,9 @@ class SetLight(smach.State):
 				smach.logerr(res.error_msg)
 				return 'failed'
 		else:
-			self.sss.set_ligh(self.color)
+			self.sss.set_light(self.color)
 			
-        return 'success'
+		return 'success'
 
 class ShowMenu(smach.State):
     def __init__(self, cmd):

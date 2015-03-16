@@ -9,7 +9,7 @@ import states.interaction
 import states.initialization
 
 # main
-def main(do_setup):
+def main():
     rospy.init_node('serodi_smach_prog_scenario')
 
     # Create a SMACH state machine

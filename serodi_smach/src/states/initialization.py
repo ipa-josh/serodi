@@ -46,7 +46,7 @@ class InitComponents(smach.State):
 import subprocess
 class ROSLaunch(smach.State):
     def __init__(self, package, launchfile):
-        smach.State.__init__(self, outcomes=['succeeded','failed'], input_keys=['running_processes'], output_keys=['running_processes'])
+        smach.State.__init__(self, outcomes=['success','failed'], input_keys=['running_processes'], output_keys=['running_processes'])
         self.package = package
         self.launchfile = launchfile
 
@@ -62,7 +62,7 @@ class ROSLaunch(smach.State):
 		if userdata.running_processes[self.package+' '+self.launchfile].poll()!=None:
 			return 'failed'
 				
-		return 'succeeded'
+		return 'success'
         
 class ROSKill(smach.State):
     def __init__(self, package, launchfile):
@@ -82,13 +82,14 @@ class ROSKill(smach.State):
 				
 		return 'pass'
 		
+import os
 class System(smach.State):
     def __init__(self, cmd):
-        smach.State.__init__(self, outcomes=['succeeded','failed'])
+        smach.State.__init__(self, outcomes=['success','failed'])
         self.cmd = cmd
 
     def execute(self, userdata):
 		if not os.system(self.cmd):
 			return 'failed'
 				
-		return 'succeeded'
+		return 'success'

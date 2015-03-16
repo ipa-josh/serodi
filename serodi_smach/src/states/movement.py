@@ -25,7 +25,7 @@ class MoveOnPath(smach.State):
         self.reverse = reverse
 
     def execute(self, userdata):
-		if reverse:
+		if self.reverse:
 			p = reversed(self.path)
 			for i in xrange(len(p)):
 				p[i][2] = p[i][2]+math.pi
