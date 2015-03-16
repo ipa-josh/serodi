@@ -180,7 +180,7 @@ function Joystick(id, ros) {
 	
 	this.pub_cmd = new ROSLIB.Topic({
 		ros : ros,
-		name : '/base/twist_controller/command',
+		name : '/base/controller/command', //'/base/twist_controller/command',
 		messageType : 'geometry_msgs/Twist'
 	});
 	
