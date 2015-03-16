@@ -32,11 +32,11 @@ def cb_js(data):
 	global sub_js
 	sub_js.unregister()
 	
-	os.system("roslaunch serodi_mapping spawner.launch &")
+	os.system("roslaunch serodi_smach spawner.launch &")
 
 if __name__ == "__main__":
 	rospy.init_node('background', anonymous=True)
-	rospy.Subscriber("/emergency", cob_relayboard.msg.EmergencyStopState, cb_em, 1)
-	sub_js = rospy.Subscriber("/joint_states", sensor_msgs.msg.JointState, cb_js, 1)
+	rospy.Subscriber("/emergency", cob_relayboard.msg.EmergencyStopState, cb_em)
+	sub_js = rospy.Subscriber("/joint_states", sensor_msgs.msg.JointState, cb_js)
 	chk_loc = states.movement.CheckLocalization()
 	rospy.spin()
