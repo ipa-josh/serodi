@@ -1,0 +1,11 @@
+script_server:
+  base_rel:
+    joint_names: [fl_caster_rotation_joint, br_caster_rotation_joint, bl_caster_rotation_joint, fl_caster_r_wheel_joint, br_caster_r_wheel_joint, bl_caster_r_wheel_joint]
+  light:
+     red: [1,0,0,1]
+     green: [0,1,0,1]
+     blue: [0,0,1,1]
+     yellow: [1,1,0,1]
+     white: [0.4,1,0.4,1]
+     black: [0,0,0,1]
+     cyan: [0.0, 1.0, 0.5, 0.4]
