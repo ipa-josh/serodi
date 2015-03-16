@@ -180,7 +180,7 @@ function Joystick(id, ros) {
 	
 	this.pub_cmd = new ROSLIB.Topic({
 		ros : ros,
-		name : '/cmd_vel_mux/input/teleop',
+		name : '/base/twist_controller/command',
 		messageType : 'geometry_msgs/Twist'
 	});
 	
