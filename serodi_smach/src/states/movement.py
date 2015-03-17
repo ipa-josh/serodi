@@ -193,11 +193,11 @@ class AutoLocalize(smach.State):
 			print "init. pose ",self.init_pose
 			
 			if self.init_pose!=None:
-				self.send_base_pose(self.init_pose[0][0], self.init_pose[0][1], self.init_pose[0][2], 0.5, 0.3)
+				self.send_base_pose(self.init_pose[0][0], self.init_pose[0][1], self.init_pose[0][2], 0.6, 0.3)
 			else:
 				self.global_localization()
 				
-			while self.std_dev==None or self.std_dev[0]>0.2 or self.std_dev[1]>0.1:
+			while self.std_dev==None or self.std_dev[0]>0.25 or self.std_dev[1]>0.15:
 				print "deviation is ",self.std_dev
 				
 				#get random pose
