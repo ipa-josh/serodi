@@ -169,6 +169,7 @@ class MapNode {
 	
 	bool srv_check_closure(cob_srvs::GetPoseStampedTransformed::Request  &req, cob_srvs::GetPoseStampedTransformed::Response &res)
 	{
+		res.result.pose.position.x=res.result.pose.position.y=res.result.pose.position.z = 0;
 		res.success = false;
 		
 		tf::Stamped < tf::Pose > pose;
@@ -177,19 +178,26 @@ class MapNode {
 			return true;
 		}
 		
-		int x,y;
-		int cur_x, cur_y;
-		pose2map(pose.getOrigin().x(), pose.getOrigin().y(), cur_x, cur_y);
-		res.success =
-		check_closure(	cur_x, cur_y,
-						map_recv_*radius_*map_recv_.getOccMap(), map_recv_.getUnkMap(), x,y);
+		try {
+			int x,y;
+			int cur_x, cur_y;
+			pose2map(pose.getOrigin().x(), pose.getOrigin().y(), cur_x, cur_y);
+			res.success =
+			check_closure(	cur_x, cur_y,
+							map_recv_*radius_*map_recv_.getOccMap(), map_recv_*radius_*map_recv_.getUnkMap(), x,y);
+			
+			cv::imwrite(map_dir_+"/dbg_map_occ_inflated.png", map_recv_*radius_*map_recv_.getOccMap());
+			cv::imwrite(map_dir_+"/dbg_map_unk_inflated.png", map_recv_*radius_*map_recv_.getUnkMap());
+							
+			map2pose(x,y, res.result.pose.position.x, res.result.pose.position.y);
+			res.result.pose.position.z = 0;
+			
+			res.result.pose.orientation = tf::createQuaternionMsgFromYaw( std::atan2(y-cur_y, x-cur_x) );
+		} catch(...) {
+			ROS_ERROR("failed to check closure");
+			return true;
+		}
 		
-		cv::imwrite(map_dir_+"/dbg_map_occ_inflated.png", map_recv_*radius_*map_recv_.getOccMap());
-						
-		map2pose(x,y, res.result.pose.position.x, res.result.pose.position.y);
-		res.result.pose.position.z = 0;
-		
-		res.result.pose.orientation = tf::createQuaternionMsgFromYaw( std::atan2(y-cur_y, x-cur_x) );
 		
 		return true;
 	}
@@ -213,8 +221,11 @@ class MapNode {
 		res.success = vis_graph(cur_x, cur_y,
 					tf::getYaw(pose.getRotation()), map_recv_*radius_*map_recv_.getOccMap(), (int)(radius_/resolution+0.99), 0.8, 1, poses);
 					
-		if(poses.size()<1) return false;
-		res.result.pose = poses[0];
+		if(poses.size()<2) {
+			ROS_ERROR("failed to get any pose");
+			return false;
+		}
+		res.result.pose = poses[1];
 		map2pose(res.result.pose.position.x, res.result.pose.position.y, res.result.pose.position.x, res.result.pose.position.y);
 		
 		return true;
