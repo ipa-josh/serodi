@@ -51,6 +51,8 @@ def main(do_setup):
 		if do_setup:
 			smach.StateMachine.add('Localization2', states.movement.AutoLocalize(sss, last_pose),
 				transitions={'success': 'Main2', 'failed': 'failure'})
+			#smach.StateMachine.add('Localization2_Backup', states.movement.AutoLocalize(sss),
+			#	transitions={'success': 'Main2', 'failed': 'failure'})
 		else:
  			smach.StateMachine.add('Localization2', states.interaction.WaitForChoice(["loc_pos_global","loc_pos_zero"]), 
                                transitions={'loc_pos_global': 'Localization2_Global', 'unknown': 'Localization2', 'loc_pos_zero': 'Localization2_Zero'})
