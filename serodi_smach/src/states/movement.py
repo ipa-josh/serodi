@@ -184,6 +184,10 @@ class AutoLocalize(smach.State):
     def execute(self, userdata):
 		self.sub_pa = rospy.Subscriber("/particlecloud", geometry_msgs.msg.PoseArray, self.cb_posearray)
 		
+		#wait for subscriber
+		while self.sub_pa.get_num_connections()<1:
+			time.sleep(0.1)
+		
 		try:
 			#set pose
 			print "init. pose ",self.init_pose
