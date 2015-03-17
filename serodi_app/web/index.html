@@ -45,50 +45,62 @@
 		forceMoveForward: true,
 		onStepChanging: function (event, currentIndex, newIndex)
 		{
-			console.log(newIndex);
+			var IND_PATH = 3;
+			var IND_LIGHT= 4;
 			
-			if(newIndex==4 || newIndex==5) {
+			if(newIndex==IND_PATH || newIndex==IND_LIGHT) {
 				map.settings['add_enabled'] = true;
+				$("setup_3_confirm").button( "diabled" );
+				$("setup_4_confirm").button( "diabled" );
+				map.update();
 			}
 			
-			if(newIndex==4) {
+			if(newIndex==IND_PATH) {
 				
 				map.on_updated_pose = function() {
-					for(i=0; i<map.poses.length; i++)
-						map.poses[i][3] = (i+1)+".";
-					if(map.poses.length>1)
+					console.log("poses: ",this.poses);
+					
+					for(i=0; i<this.poses.length; i++)
+						this.poses[i][3] = (i+1)+".";
+					if(this.poses.length>1)
 						$("setup_3_confirm").button( "enable" );
 					else
 						$("setup_3_confirm").button( "diabled" );
 				}
 				if(currentIndex!=newIndex) map.clearPoses();
+				map.update();
+			}
 				
+			if(newIndex-1==IND_PATH) {
 				return map.poses.length>1;
 			}
 			
-			if(newIndex==5) {
+			if(newIndex==IND_LIGHT) {
 				
 				map.on_updated_pose = function() {
 					//turn off all lights except for next
 					for(i=0; i<known_lights.length; i++)
 						set_external_light(ros, known_lights[i]['housecode'], known_lights[i]['addr_fs20'], (i==map.poses.length));
 					
-					for(i=0; i<map.poses.length; i++)
-						map.poses[i][3] = known_lights[i].name;
-					if(known_lights==map.poses.length) {
-						map.settings['add_enabled'] = false;
-						$("setup_3_confirm").button( "enable" );
+					for(i=0; i<this.poses.length; i++)
+						this.poses[i][3] = known_lights[i].name;
+					if(known_lights==this.poses.length) {
+						this.settings['add_enabled'] = false;
+						$("setup_4_confirm").button( "enable" );
 					}
 					else {
-						map.settings['add_enabled'] = true;
-						$("setup_3_confirm").button( "diabled" );
+						this.settings['add_enabled'] = true;
+						$("setup_4_confirm").button( "diabled" );
 					}
 				}
 				if(currentIndex!=newIndex) {
 					map.clearPoses();
 					//if(newIndex==4) map.addPose(0,0,0, "");
 				}
+				map.update();
+			}
 				
+			if(newIndex-1==IND_LIGHT) {
 				return map.poses.length!=known_lights.length;
 			}
 			
@@ -106,8 +118,8 @@
 		sendChoice("setup");
 	});
 	$("#setup_3_confirm").click(function() {
-		sendChoice("path:"+JSON.stringify({'path':map.poses}));
-		$("#wizard_setup").steps("next");
+		sendChoice("path:"+JSON.stringify(map.poses));
+		//$("#wizard_setup").steps("next");
 	});
 	$("#setup_4_confirm").click(function() {
 		data = []
@@ -116,8 +128,8 @@
 				'pose': map.poses[i]
 				}));
 		}
-		sendChoice("lights:"+JSON.stringify({'lights':data}));
-		$("#wizard_setup").steps("next");
+		sendChoice("lights:"+JSON.stringify(data));
+		//$("#wizard_setup").steps("next");
 	});
 	
 	$("#wizard_localization").steps({
@@ -146,11 +158,11 @@
 	
 	$( "#dialog_setup" ).dialog({autoOpen: false,
 		width: 800,
-		close: function( event, ui ) {sendCancel();}}
+		close: function( event, ui ) {$("#wizard_setup").steps("reset");map.destroy();sendCancel();}}
 	);
 	$( "#dialog_localization" ).dialog({autoOpen: false,
 		width: 800,
-		close: function( event, ui ) {sendCancel();}}
+		close: function( event, ui ) {$("#wizard_localization").steps("reset");map.destroy();sendCancel();}}
 	);
 	$( "#dialog_scenario" ).dialog({autoOpen: false,
 		width: 800,
