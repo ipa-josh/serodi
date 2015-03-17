@@ -199,6 +199,16 @@ function Map(src, parent, ros) {
 	});
 	this.sub_localized = sub_localized;
 	
+	//get map info
+	var sub_map = new ROSLIB.Topic({
+		ros : ros,
+		name : '/map',
+		messageType : 'nav_msgs/OccupancyGrid'
+	});
+	sub_map.subscribe(function(pwcs) {
+		sub_map.unsubscribe();
+	});
+	
 	// TF Client
 	// ---------
 	var tfClient = new ROSLIB.TFClient({
