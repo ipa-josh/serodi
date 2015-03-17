@@ -53,9 +53,9 @@ def main():
 						   transitions={'success':'MainMenu',  'failed':'failure'})
         smach.StateMachine.add('Program_Scenario', states.initialization.ROSLaunch('serodi_smach','scenario.launch'), 
 						   transitions={'success':'MainMenu',  'failed':'failure'})
-        smach.StateMachine.add('Program_Scenario_Operation', states.initialization.System('rosrun serodi_smach op_small.py'), 
+        smach.StateMachine.add('Program_Scenario_Operation', states.initialization.ROSLaunch('serodi_smach','scenario_operation.launch'), 
 						   transitions={'success':'MainMenu',  'failed':'failure'})
-        smach.StateMachine.add('Program_Scenario_Patrol', states.initialization.System('rosrun serodi_smach op_patrol.py'), 
+        smach.StateMachine.add('Program_Scenario_Patrol', states.initialization.ROSLaunch('serodi_smach','scenario_patrol.launch'), 
 						   transitions={'success':'MainMenu',  'failed':'failure'})
         smach.StateMachine.add('Program_Shutdown', states.initialization.System('halt'), 
 						   transitions={'success':'MainMenu',  'failed':'MainMenu'})
