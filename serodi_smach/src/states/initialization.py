@@ -71,10 +71,16 @@ class ROSKill(smach.State):
 
     def execute(self, userdata):
 		if self.package==None:
-			for k in userdata.running_processes:
-				if k in self.launchfile: continue
-				userdata.running_processes[k].terminate()
-				userdata.running_processes.pop(k)
+			found = True
+			while found:
+				found = False
+				for k in userdata.running_processes:
+					if k in self.launchfile: continue
+					
+					userdata.running_processes[k].terminate()
+					userdata.running_processes.pop(k)
+					found = True
+					break
 		elif hasattr(userdata,'running_processes') and self.package+' '+self.launchfile in userdata.running_processes:
 			userdata.running_processes[self.package+' '+self.launchfile].terminate()
 			userdata.running_processes.pop(self.package+' '+self.launchfile)
