@@ -20,6 +20,7 @@ def main():
     sm = smach.StateMachine(outcomes=['success', 'failure'])
     
     sm.userdata.data = {'op_patrol':{}}
+    sm.userdata.nonblocking = False
 
     # Open the container
     with sm:        

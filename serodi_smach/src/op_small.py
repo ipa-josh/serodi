@@ -20,6 +20,7 @@ def main():
     sm = smach.StateMachine(outcomes=['success', 'failure'])
     
     sm.userdata.data = {'op_small':{}}
+    sm.userdata.nonblocking = False
 
     # Open the container
     with sm:
@@ -48,6 +49,7 @@ def main():
 			sq = smach.Sequence(
 					outcomes = ['success','failed'],
 					connector_outcome = 'success')
+			sq.userdata = sm.userdata
 			with sq:
 				smach.Sequence.add('SetLight_'+l+"_RED1", states.interaction.SetLight(sss,'red'))
 				smach.Sequence.add('SetLight_'+l+"_RED2", states.interaction.SetLight(sss,'red', light))
@@ -66,7 +68,7 @@ def main():
 			sq = smach.Sequence(
 					outcomes = ['success','failed'],
 					connector_outcome = 'success')
-					
+			sq.userdata = sm.userdata					
 			with sq:
 				#smach.Sequence.add('Wait_'+l, states.interaction.Wait(light['waiting_time']))
 				smach.Sequence.add('MoveToHome_'+l, states.movement.MoveToPose(sss,'home'))
