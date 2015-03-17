@@ -1,3 +1,3 @@
 <launch>
-  <node name="smach_prog_scen" pkg="serodi_smach" type="program_scenario.py" args="--setup" cwd="node" output="screen"/>
+  <node name="smach_prog_scen" pkg="serodi_smach" type="program_scenario.py" cwd="node" output="screen"/>
 </launch>

@@ -1,0 +1,3 @@
+<launch>
+  <node name="smach_prog_scen" pkg="serodi_smach" type="program_scenario.py" args="--patrol" cwd="node" output="screen"/>
+</launch>
