@@ -21,6 +21,7 @@ def main():
 		sq = smach.Sequence(
 				outcomes = ['success','failed'],
 				connector_outcome = 'success')
+		sq.userdata = sm.userdata
 		with sq:
 			last_pose=[[]]
 			
