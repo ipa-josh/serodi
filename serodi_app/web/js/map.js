@@ -82,6 +82,7 @@ function Map(src, parent, ros) {
 	
 	this.draw = function() {		
 		this.c.drawImage(this.img,0,0);
+			
 		for(i in this.poses) {
 			if(!this.map_info) continue;
 			
@@ -107,15 +108,19 @@ function Map(src, parent, ros) {
 			var pos = this.pose2img(p);
 
 			//draw var. trans.
-			var grd=this.c.createRadialGradient(pos.x, pos.y, 1, pos.x, pos.y, this.pose_var[0]/this.map_info.resolution);
-			grd.addColorStop(0,"blue");
+			/*var grd=this.c.createRadialGradient(pos.x, pos.y, 1, pos.x, pos.y, this.pose_var[0]/this.map_info.resolution);
+			grd.addColorStop(0,"red");
 			grd.addColorStop(1,"transparent");
 			
 			this.c.beginPath(); 
 			this.c.fillStyle = grd;
 			this.c.lineWidth = 0;
-			this.c.arc( pos.x, pos.y, this.pose_var[0]/this.map_info.resolution,0, Math.PI*2,true); 
-			this.c.stroke();
+			var a1 = pos.yaw-this.pose_var[1], a2 = pos.yaw+this.pose_var[1];
+			if(a1<0) a1+=2+Math.pi;
+			if(a2<0) a2+=2+Math.pi;
+			console.log(Math.min(a1,a2),Math.max(a1,a2));
+			this.c.arc( pos.x, pos.y, this.pose_var[0]/this.map_info.resolution,Math.min(a1,a2),Math.max(a1,a2),true); 
+			this.c.fill();
 
 			//draw var. rot.
 			var grd=this.c.createRadialGradient(pos.x, pos.y, 1, pos.x, pos.y, this.pose_var[1]/this.map_info.resolution);
@@ -126,14 +131,33 @@ function Map(src, parent, ros) {
 			this.c.fillStyle = grd;
 			this.c.lineWidth = 0;
 			this.c.arc( pos.x, pos.y, this.pose_var/this.map_info.resolution,pos.yaw-this.pose_var[1],pos.yaw+this.pose_var[1],true); 
-			this.c.stroke();
+			this.c.fill();*/
 		
 			//draw robot
-			this.c.beginPath(); 
-			this.c.strokeStyle = "#43D729"; 
-			this.c.lineWidth = RADIUS/3;
-			this.c.arc( pos.x, pos.y, 15,pos.yaw-0.2,pos.yaw+0.2,true); 
-			this.c.stroke();
+			if(this.pose_var[0]>0 && this.pose_var[1]>0) {
+				var a1 = pos.yaw-this.pose_var[1], a2 = pos.yaw+this.pose_var[1];
+				if(a1<0) a1+=2*Math.PI;
+				if(a2<0) a2+=2*Math.PI;
+				
+				this.c.beginPath(); 
+				this.c.strokeStyle = "#75A16E"; 
+				this.c.lineWidth = RADIUS/5;
+				this.c.arc( pos.x, pos.y, 15,pos.yaw-0.2,pos.yaw+0.2,true); 
+				this.c.stroke();
+				
+				this.c.beginPath(); 
+				this.c.strokeStyle = "#43D729"; 
+				this.c.lineWidth = RADIUS/3;
+				this.c.arc( pos.x, pos.y, this.pose_var[0]/this.map_info.resolution,Math.min(a1,a2),Math.max(a1,a2) ,true); 
+				this.c.stroke();
+			}
+			else {
+				this.c.beginPath(); 
+				this.c.strokeStyle = "#43D729"; 
+				this.c.lineWidth = RADIUS/3;
+				this.c.arc( pos.x, pos.y, 15,pos.yaw-0.2,pos.yaw+0.2,true); 
+				this.c.stroke();
+			}
 		}
 		
 		if(this.robot_pose) {
@@ -193,7 +217,7 @@ function Map(src, parent, ros) {
 	});
 	// Then we add a callback to be called every time a message is published on this topic.
 	sub_localized.subscribe(function(pwcs) {
-		self.pose_var =  [pwcs.pose.covariance[0], pwcs.pose.covariance[25]]
+		self.pose_var =  [pwcs.pose.covariance[0], pwcs.pose.covariance[pwcs.pose.covariance.length-1]]
 		//self.update();
 		console.log("localized ",self.pose_var);
 	});
