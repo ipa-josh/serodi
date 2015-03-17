@@ -37,17 +37,19 @@ def cb_js(data):
 	
 	os.system("roslaunch serodi_smach spawner.launch &")
 	
-def restart_base():
+def restart_base(req):
 	global sub_js
 	
-	print "TODO base shutdown"
-	trigger_srv('/base/recover')
+	trigger_srv('/base/driver/shutdown')
 	sub_js = rospy.Subscriber("/joint_states", sensor_msgs.msg.JointState, cb_js)
-	trigger_srv('/base/init')
+	trigger_srv('/base/driver/init')
+	
+	return cob_srvs.srv.TriggerResponse()
 
 if __name__ == "__main__":
 	rospy.init_node('background', anonymous=True)
 	rospy.Subscriber("/emergency", cob_relayboard.msg.EmergencyStopState, cb_em)
 	sub_js = rospy.Subscriber("/joint_states", sensor_msgs.msg.JointState, cb_js)
+	rospy.Service('/ui/reset_base', cob_srvs.srv.Trigger, restart_base)
 	chk_loc = states.movement.CheckLocalization()
 	rospy.spin()
