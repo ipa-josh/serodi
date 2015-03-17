@@ -99,7 +99,7 @@ function Map(src, parent, ros) {
 			this.c.beginPath(); 
 			this.c.fillStyle = "black";
 			this.c.font="14px Verdana";
-			this.c.fillText(p[3], p[0]-6,p[1]+5);
+			this.c.fillText(p[3], pos.x-6,pos.y+5);
 		}
 		
 		if(this.robot_pose && this.map_info) {
