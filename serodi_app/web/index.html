@@ -30,9 +30,31 @@
 	var map;
 	var known_lights = [];
 	
+	function btn_enable($btn, enabled) {
+		if(!enabled)
+			$btn.prop("disabled",true).find("span").addClass('disabled');
+		else
+			$btn.prop("disabled",false).find("span").removeClass('disabled');
+	}
+	
   $(function() {
 	  init_gallery();
-    $( "#menu" ).accordion();
+    $( "#menu" ).accordion({
+		beforeActivate: function( event, ui ) {
+			//console.log(ui.newPanel);
+			$("#overwrite_loc").show();
+			btn_enable($("#start_scenario"), false);
+			btn_enable($("#start_scenario_patrol"), false);
+			btn_enable($("#start_scenario_operation"), false);
+			
+		  (new ROSLIB.Param({ros : ros, name : '/ui/is_initialized'})).get(function(value) {
+				btn_enable($("#start_scenario"), value);
+				btn_enable($("#start_scenario_patrol"), value);
+				btn_enable($("#start_scenario_operation"), value);
+				$("#overwrite_loc").show(value);
+		  });
+		}
+    });
 	$( "button" ).button();
 	
 	$("#wizard_setup").steps({
@@ -50,8 +72,8 @@
 			
 			if(newIndex==IND_PATH || newIndex==IND_LIGHT) {
 				map.settings['add_enabled'] = true;
-				$("setup_3_confirm").button( "diabled" );
-				$("setup_4_confirm").button( "diabled" );
+				btn_enable($("setup_3_confirm"), false);
+				btn_enable($("setup_4_confirm"), false);
 				map.update();
 			}
 			
@@ -62,10 +84,7 @@
 					
 					for(i=0; i<this.poses.length; i++)
 						this.poses[i][3] = (i+1)+".";
-					if(this.poses.length>1)
-						$("setup_3_confirm").button( "enable" );
-					else
-						$("setup_3_confirm").button( "diabled" );
+					btn_enable($("setup_3_confirm"), this.poses.length>1);
 				}
 				if(currentIndex!=newIndex) map.clearPoses();
 				map.update();
@@ -84,14 +103,10 @@
 					
 					for(i=0; i<this.poses.length; i++)
 						this.poses[i][3] = known_lights[i].name;
-					if(known_lights==this.poses.length) {
-						this.settings['add_enabled'] = false;
-						$("setup_4_confirm").button( "enable" );
-					}
-					else {
-						this.settings['add_enabled'] = true;
-						$("setup_4_confirm").button( "diabled" );
-					}
+						
+					this.settings['add_enabled'] = (known_lights!=this.poses.length);
+					btn_enable($("setup_4_confirm"), !this.settings['add_enabled']);
+					this.update();
 				}
 				if(currentIndex!=newIndex) {
 					map.clearPoses();
@@ -108,8 +123,8 @@
 		}
 	});
 	$("#setup_0_confirm").click(function() {
-		$("setup_3_confirm").button( "diabled" );
-		$("setup_4_confirm").button( "diabled" );
+		btn_enable($("setup_3_confirm"), false);
+		btn_enable($("setup_4_confirm"), false);
 		$( "#dialog_setup" ).append('<p><div id="setup_map" /></p>');
 		map = new Map("img/map/map_occ.png", $("#setup_map"), ros);
 		
@@ -157,21 +172,23 @@
 	});
 	
 	$( "#dialog_setup" ).dialog({autoOpen: false,
-		width: 800,
-		close: function( event, ui ) {$("#wizard_setup").steps("reset");map.destroy();sendCancel();}}
+		close: function( event, ui ) {$("#wizard_setup").steps("reset");map.destroy();sendCancel();},
+		open: function( event, ui ) {resize_dialogs();}}
 	);
 	$( "#dialog_localization" ).dialog({autoOpen: false,
-		width: 800,
-		close: function( event, ui ) {$("#wizard_localization").steps("reset");map.destroy();sendCancel();}}
-	);
-	$( "#dialog_scenario" ).dialog({autoOpen: false,
-		width: 800,
-		close: function( event, ui ) {sendCancel();}}
+		close: function( event, ui ) {$("#wizard_localization").steps("reset");map.destroy();sendCancel();},
+		open: function( event, ui ) {resize_dialogs();}}
 	);
 	$( "#dialog_log" ).dialog({autoOpen: false,
-		width: 800
+		open: function( event, ui ) {resize_dialogs();}
 	});
 	$("#scenario_wait").click(function() {
+		  sendChoice("wait");
+	});
+	$("#message_btn1").click(function() {
+		  sendChoice("wait");
+	});
+	$("#message_btn2").click(function() {
 		  sendChoice("wait");
 	});
 	$( "#dialog-confirm" ).dialog({autoOpen: false,
@@ -188,6 +205,29 @@
         }
       }
     });
+    
+	$(".ui-dialog").data('left_offset', 200);
+	$( "#dialog_scenario" ).dialog({autoOpen: false,
+		close: function( event, ui ) {sendCancel();},
+		open: function( event, ui ) {resize_dialogs();}
+	}).prev(".ui-dialog-titlebar").css("font-weight","bold").css("font-size","300%").css("text-align","center").css("padding", "0.4em 0.2em");
+
+	$(".ui-dialog-titlebar").css('width','98%').append('<img src="images/ipa.gif" height="40px" style="float:right; top:0px;" />');
+	
+	
+	function resize_dialogs() {
+	   $(".ui-dialog").each(function() {
+		   var off = $(this).data('left_offset');
+		   if(!off) off=0;
+			   $(this).css({
+				'width': $(window).width()-off,
+				'height': $(window).height(),
+				'left': off+'px',
+				'top':'0px'
+		   });
+		});
+   }
+	$(window).resize(resize_dialogs);
 	
 	$("#ros_error").click(function() {$( "#dialog_log" ).dialog("open");});
 	$("#ros_connected").click(function() {$( "#dialog_log" ).dialog("open");});
@@ -213,14 +253,34 @@
 	$("#start_shutdown").click(function() {
 		$( "#dialog-confirm" ).dialog("open");
 	});
+	
+	$("#reset_base").click(function() {
+		var srv = new ROSLIB.Service({
+			ros : ros,
+			name : '/ui/reset_base',
+			serviceType : 'cob_srvs/Trigger'
+		  });
+
+		  srv.callService(new ROSLIB.ServiceRequest({}), function(result) {
+			console.log('Result for service call on '+ srv.name+ ': ',  result);
+		  });
+	});
 
 	$( "#radio" ).buttonset();
+	$("#overwrite_loc").buttonset();
+	
 	var joy = new Joystick("joystick", ros);
 	joy.enabled = false;
 	joy.update();
 	$("#joystick_lockL").click(function(){joy.enabled=false;joy.update();});
 	$("#joystick_lockU").click(function(){joy.enabled=true;joy.update();});
 	
+	$("#overwrite_loc_on").click(function(){
+			btn_enable($("#start_scenario"), true);
+			btn_enable($("#start_scenario_patrol"), true);
+			btn_enable($("#start_scenario_operation"), true);
+			$("#overwrite_loc").hide();
+	});
 	$("#ros_connected").hide();
 	
 	start_logging(ros, $("#log_tbl"));
@@ -296,13 +356,39 @@
   // Then we add a callback to be called every time a message is published on this topic.
   sub_menu.subscribe(function(message) {
     console.log("ui menu: ",message);
-    //sub_menu.unsubscribe();
     
     cmd = message.data.split(":");
     if(cmd.length<1) return;
     
     if(cmd[0]=="next") {
 		if(active) active.steps("next");
+	}
+  });
+  
+  
+  var sub_msg = new ROSLIB.Topic({
+    ros : ros,
+    name : '/ui/msg',
+    messageType : 'std_msgs/String'
+  });
+  // Then we add a callback to be called every time a message is published on this topic.
+  sub_msg.subscribe(function(message) {
+    console.log("ui msg: ",message);
+    
+    $("#dialog_scenario").dialog('option', 'title', message.data);
+    
+    if(message.data.search("Warte auf")!=-1)
+		$("#message_btn1").show();
+	else
+		$("#message_btn1").hide();
+		
+    if(message.data.search("dokumentieren")!=-1) {
+		$("#message_btn2").show();
+		$("#warenhaltung").show();
+	}
+	else {
+		$("#message_btn2").hide();
+		$("#warenhaltung").hide();
 	}
   });
   
@@ -324,6 +410,7 @@
 	
 	
 <div id="dialog_log" title="Log">
+	<button id="reset_base">Reset base</button><br />
 	Log file of current SMACH states output:<br />
 	<table id="log_tbl" class="display" cellspacing="0" width="100%">
         <thead>
@@ -393,6 +480,7 @@
         <p>
 		<b>Attention:</b> The robot is going to move on itself. Please keep watch! Keep the emergency stop in your hand! <br />
 		<button id="localization_0_confirm">Ok</button>
+		<br /><br />
         </p>
     </section>
     <h3>Choice...</h3>
@@ -404,15 +492,18 @@
         <p>
 		<button id="localization_2_global">Global localizaton</button>
 		<button id="localization_2_zero">Localization with starting position</button>
+		<br /><br />
         </p>
     </section>
     <h3>Localize...</h3>
     <section>
-        <p>Please wait while the robot is moving around and localizing itslef in the environment. This will stop automatically. Otherwise you can cancel the action by closing the dialog.</p>
+        <p>Please wait while the robot is moving around and localizing itslef in the environment. This will stop automatically. Otherwise you can cancel the action by closing the dialog.
+		<br /><br /></p>
     </section>
     <h3>Done!</h3>
     <section>
-        <p>The robot is localized now. Close the dialog.</p>
+        <p>The robot is localized now. Close the dialog.
+		<br /><br /></p>
     </section>
 </div>
 </div>
@@ -422,32 +513,69 @@
 </div>
 	
 <div id="dialog_scenario" title="Pflegewagenverwaltung">
-<p>
+	<p><br />
+		<button id="message_btn1" style="font-size: 200%;margin-left: auto; margin-right: auto; width: 100%;">Pflegekraft anwesend</button>
+		<button id="message_btn2" style="font-size: 200%;margin-left: auto; margin-right: auto; width: 100%;">Freigabe</button>
+	</p>
+<!--p>
 	If the green light is on you can pause the scenario.
 	<button id="scenario_wait">Pause/Run</button>
-</p>
-<div class="ui-widget ui-helper-clearfix">
+</p-->
+<div id="warenhaltung" class="ui-widget ui-helper-clearfix">
  
-<ul id="gallery" class="gallery ui-helper-reset ui-helper-clearfix">
-  <li class="ui-widget-content ui-corner-tr">
-    <img src="img/content/dummy.jpg" alt="The peaks of High Tatras" width="96" height="72">
+<ul id="gallery" class="gallery_box gallery ui-helper-reset ui-helper-clearfix ui-widget-content ui-state-default" style="width: 47%; height: 20em;">
+  <h4 class="ui-widget-header">Inhalt Pflegewagen</h4>
+  
+  <li class="ui-widget-content ui-corner-tr" style="background: white">
+    <img src="img/content/Latexhandschuh.jpg" alt="The peaks of High Tatras" width="96" height="72">
   </li>
-  <li class="ui-widget-content ui-corner-tr">
-    <img src="img/content/dummy.jpg" alt="The chalet at the Green mountain lake" width="96" height="72">
+  <li class="ui-widget-content ui-corner-tr" style="background: white">
+    <img src="img/content/waschlotion.jpg" alt="The chalet at the Green mountain lake" width="96" height="72">
   </li>
-  <li class="ui-widget-content ui-corner-tr">
-    <img src="img/content/dummy.jpg" alt="Planning the ascent" width="96" height="72">
+  <li class="ui-widget-content ui-corner-tr" style="background: white">
+    <img src="img/content/muellbeutel.jpg" alt="Planning the ascent" width="96" height="72">
   </li>
-  <li class="ui-widget-content ui-corner-tr">
-    <img src="img/content/dummy.jpg" alt="On top of Kozi kopka" width="96" height="72">
+  <li class="ui-widget-content ui-corner-tr" style="background: white">
+    <img src="img/content/schutzkappen.jpg" alt="On top of Kozi kopka" width="96" height="72">
+  </li>
+  
+  <li class="ui-widget-content ui-corner-tr" style="background: white">
+    <img src="img/content/Huehneraugen-Pflaster.png" alt="On top of Kozi kopka" width="96" height="72">
+  </li>
+  <li class="ui-widget-content ui-corner-tr" style="background: white">
+    <img src="img/content/Rasierer.jpg" alt="On top of Kozi kopka" width="96" height="72">
+  </li>
+  <li class="ui-widget-content ui-corner-tr" style="background: white">
+    <img src="img/content/wegehahn.jpg" alt="On top of Kozi kopka" width="96" height="72">
+  </li>
+  <li class="ui-widget-content ui-corner-tr" style="background: white">
+    <img src="img/content/in-stopfen.jpg" alt="On top of Kozi kopka" width="96" height="72">
+  </li>
+  
+  <li class="ui-widget-content ui-corner-tr" style="background: white">
+    <img src="img/content/spritze.jpg" alt="On top of Kozi kopka" width="96" height="72">
+  </li>
+  <li class="ui-widget-content ui-corner-tr" style="background: white">
+    <img src="img/content/binde.jpg" alt="On top of Kozi kopka" width="96" height="72">
+  </li>
+  <li class="ui-widget-content ui-corner-tr" style="background: white">
+    <img src="img/content/Octanisept.jpg" alt="On top of Kozi kopka" width="96" height="72">
+  </li>
+  <li class="ui-widget-content ui-corner-tr" style="background: white">
+    <img src="img/content/Intermed_100268.jpg" alt="On top of Kozi kopka" width="96" height="72">
   </li>
 </ul>
  
-<div id="trash" class="ui-widget-content ui-state-default">
-  <h4 class="ui-widget-header"><span class="ui-icon ui-icon-trash">Verbraucht</span> Verbraucht</h4>
+<div id="trash" class="gallery_box ui-widget-content ui-state-default" style="width: 47%; height: 20em;">
+  <h4 class="ui-widget-header"><span class="ui-icon ui-icon-trash">Verbrauch</span>Verbrauch</h4>
 </div>
  
 </div>
+
+	<p>
+		<img src="images/ipa.gif" height="50px" style="float:left;" />
+		<img src="images/serodi.png" height="50px" style="float:right;" />
+	</p>
 </div>
  
 <table>
@@ -464,7 +592,17 @@
 </td>
 <td>
 
-<div id="menu" style="height:666px">
+<div id="menu_container" style="width:1000px !important;"></div>
+<div id="menu" style="height:666px;width:100% !important;">
+  <h3>Localization</h3>
+  <div>
+    <p>
+    This will localize the robot in its map. <b>This is necessary after every start of the robot software!</b><br>
+    </p>
+    <p>
+    <button style="float:right;" id="start_localization">Start</button>
+    </p>
+  </div>
   <h3>Scenario</h3>
   <div>
     <p>
@@ -477,18 +615,16 @@
     	<b>Start operation:</b> Starts operation (1x)<br />
     </p>
     <p>
-    <button style="float:right;" id="start_scenario">Start all</button>
-    <button style="float:right;" id="start_scenario_patrol">Start patrol</button>
-    <button style="float:right;" id="start_scenario_operatoin">Start operation</button>
-    </p>
-  </div>
-  <h3>Localization</h3>
-  <div>
-    <p>
-    This will localize the robot in its map. <b>This is necessary after every start of the robot software!</b><br>
-    </p>
-    <p>
-    <button style="float:right;" id="start_localization">Start</button>
+		<div id="overwrite_loc" style="float:left">
+			I am sure to be localized: 
+			<input type="radio" id="overwrite_loc_on" name="overwrite_loc" ><label for="overwrite_loc_on">Yes</label>
+			<input type="radio" id="overwrite_loc_off" name="overwrite_loc"checked="checked"><label for="overwrite_loc_off">No</label>
+		</div>
+		
+		<button style="float:right;" id="start_scenario">Start all</button>
+		<button style="float:right;" id="start_scenario_patrol">Start patrol</button>
+		<button style="float:right;" id="start_scenario_operation">Start operation</button>
+		<br /><br />
     </p>
   </div>
   <h3>Setup</h3>
@@ -509,6 +645,7 @@
     <button style="float:right;" id="start_shutdown">Shutdown</button>
     </p>
   </div>
+</div>
 </div>
  </td></tr>
  </table>
