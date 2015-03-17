@@ -1,3 +1,3 @@
 known_lights:
-- {name: 'Vorne', 'waiting_time': 10, 'housecode': "12344321", addr_fs20: "3321"}
-- {name: 'Hinten', 'waiting_time': 10, 'housecode': "12344321", addr_fs20: "3231"}
+- {name: 'Zimmer 1', 'waiting_time': 10, 'housecode': "12344321", addr_fs20: "3321"}
+- {name: 'Zimmer 2', 'waiting_time': 10, 'housecode': "12344321", addr_fs20: "3231"}
