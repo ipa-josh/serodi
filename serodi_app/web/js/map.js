@@ -107,29 +107,31 @@ function Map(src, parent, ros) {
 			var pos = this.pose2img(p);
 
 			//draw var. trans.
-			var grd=ctx.createRadialGradient(pos.x, pos.y, 1, pos.x, pos.y, this.pose_var/this.map_info.resolution);
+			var grd=this.c.createRadialGradient(pos.x, pos.y, 1, pos.x, pos.y, this.pose_var[0]/this.map_info.resolution);
 			grd.addColorStop(0,"blue");
 			grd.addColorStop(1,"transparent");
 			
 			this.c.beginPath(); 
 			this.c.fillStyle = grd;
+			this.c.lineWidth = 0;
 			this.c.arc( pos.x, pos.y, this.pose_var[0]/this.map_info.resolution,0, Math.PI*2,true); 
 			this.c.stroke();
 
 			//draw var. rot.
-			var grd=ctx.createRadialGradient(pos.x, pos.y, 1, pos.x, pos.y, this.pose_var/this.map_info.resolution);
+			var grd=this.c.createRadialGradient(pos.x, pos.y, 1, pos.x, pos.y, this.pose_var[1]/this.map_info.resolution);
 			grd.addColorStop(0,"red");
 			grd.addColorStop(1,"transparent");
 			
 			this.c.beginPath(); 
 			this.c.fillStyle = grd;
+			this.c.lineWidth = 0;
 			this.c.arc( pos.x, pos.y, this.pose_var/this.map_info.resolution,pos.yaw-this.pose_var[1],pos.yaw+this.pose_var[1],true); 
 			this.c.stroke();
 		
 			//draw robot
 			this.c.beginPath(); 
 			this.c.strokeStyle = "#43D729"; 
-			this.c.lineWidth = RADIUS;
+			this.c.lineWidth = RADIUS/3;
 			this.c.arc( pos.x, pos.y, 15,pos.yaw-0.2,pos.yaw+0.2,true); 
 			this.c.stroke();
 		}
