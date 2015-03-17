@@ -201,10 +201,14 @@ class AutoLocalize(smach.State):
 				print "deviation is ",self.std_dev
 				
 				#get random pose
-				check = rospy.ServiceProxy('/get_pose_free', cob_srvs.srv.GetPoseStampedTransformed)
-				res = check( cob_srvs.srv.GetPoseStampedTransformedRequest() )
+				for tries in xrange(10):
+					check = rospy.ServiceProxy('/get_pose_free', cob_srvs.srv.GetPoseStampedTransformed)
+					res = check( cob_srvs.srv.GetPoseStampedTransformedRequest() )
+					if res.success == True: break
+					time.sleep(10)
 				
 				if res.success == False:
+					smach.logerr("failed to get a free pose")
 					return 'failed'
 				
 				#move to pose
