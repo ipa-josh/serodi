@@ -213,9 +213,9 @@ class SaveYaml(smach.State):
 
     def execute(self, userdata):
 		f = open(self.filename,'w')
-		f.write( yaml.dump(userdata.data[self.obj]) )
+		f.write( yaml.safe_dump(userdata.data[self.obj]) )
 		f.close()
-		return 'pass'
+		return 'success'
 		
 class LoadYaml(smach.State):
     def __init__(self, obj, filename, sm=None):
