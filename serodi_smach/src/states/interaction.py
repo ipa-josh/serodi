@@ -314,9 +314,9 @@ class SetLight(smach.State):
 		return 'success'
 
 class ShowMenu(smach.State):
-    def __init__(self, cmd):
+    def __init__(self, cmd, topic='/ui/menu'):
         smach.State.__init__(self, outcomes=['success'], input_keys=[], output_keys=[])
-        self.pub = rospy.Publisher('/ui/menu', std_msgs.msg.String, queue_size=10)
+        self.pub = rospy.Publisher(topic, std_msgs.msg.String, queue_size=10)
         self.msg = std_msgs.msg.String(cmd)
 
     def execute(self, userdata):
