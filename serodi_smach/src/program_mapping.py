@@ -29,6 +29,7 @@ def main(do_setup):
 		sq = smach.Sequence(
 				outcomes = ['success','failed'],
 				connector_outcome = 'success')
+		sq.userdata = sm.userdata
 		with sq:
 			last_pose=[[]]
 			
@@ -67,16 +68,17 @@ def main(do_setup):
 		sq = smach.Sequence(
 				outcomes = ['success','failed'],
 				connector_outcome = 'success')
+		sq.userdata = sm.userdata
 		with sq:
 			smach.Sequence.add('UI_LocalizationDone', states.interaction.ShowMenu('next'))
 			
 			if do_setup:
 				smach.Sequence.add('SetPatrolPath', states.interaction.ReadVariableFromChoice('path', 'op_patrol.path'))
-				smach.Sequence.add('SavePatrolPath', states.interaction.SaveYaml('op_patrol', 'config/op_patrol.yaml'))
+				smach.Sequence.add('SavePatrolPath', states.interaction.SaveYaml('op_patrol', '../config/op_patrol.yaml'))
 				smach.Sequence.add('UI_SetPatrolPathDone', states.interaction.ShowMenu('next'))
 				
 				smach.Sequence.add('SetLightPoses', states.interaction.ReadVariableFromChoice('lights', 'op_small.lights'))
-				smach.Sequence.add('SaveLightPoses', states.interaction.SaveYaml('op_small', 'config/op_small.yaml'))
+				smach.Sequence.add('SaveLightPoses', states.interaction.SaveYaml('op_small', '../config/op_small.yaml'))
 				smach.Sequence.add('UI_SetLightPosesDone', states.interaction.ShowMenu('next'))
 			
 		smach.StateMachine.add('Main2', sq, 
