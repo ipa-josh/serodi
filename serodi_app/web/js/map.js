@@ -39,7 +39,7 @@ function Map(src, parent, ros) {
 		handleEvent: function(event) {
 			var x=event.offsetX;
 			var y=event.offsetY;
-			if(this.obj.settings['add_enabled'] && this.obj.robot_pose && this.obj.map_info &&
+			if(this.obj.settings['add_enabled'] && this.obj.robot_pose &&
 				x>=4 && x<=this.obj.icon['add'].width+4 &&
 				y>=4 && y<=this.obj.icon['add'].height+4 ) {
 				this.obj.active_pose = this.obj.addPose(this.obj.robot_pose[0],this.obj.robot_pose[1],this.obj.robot_pose[2], "");
@@ -55,6 +55,8 @@ function Map(src, parent, ros) {
 					return;
 				}
 			}
+			
+			if(!this.map_info) return;
 			
 			for(i in this.obj.poses) {
 				var p=this.obj.poses[i];
@@ -78,9 +80,11 @@ function Map(src, parent, ros) {
 			return {x: (p[0]-ox)/r, y: this.map_info.height-1-(p[1]-oy)/r, yaw: p[2]};
 	}
 	
-	this.draw = function() {
+	this.draw = function() {		
 		this.c.drawImage(this.img,0,0);
 		for(i in this.poses) {
+			if(!this.map_info) continue;
+			
 			var p=this.poses[i];
 			var pos = this.pose2img(p);
 			
@@ -128,7 +132,9 @@ function Map(src, parent, ros) {
 			this.c.lineWidth = RADIUS;
 			this.c.arc( pos.x, pos.y, 15,pos.yaw-0.2,pos.yaw+0.2,true); 
 			this.c.stroke();
-			
+		}
+		
+		if(this.robot_pose) {
 			if(this.settings['add_enabled'])
 				this.c.drawImage(this.icon['add'],4,4);
 		}
