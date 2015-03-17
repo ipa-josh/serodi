@@ -26,6 +26,9 @@ def main():
     with sm:        
         # just move on path (poses)
         
+        smach.StateMachine.add('ShowMsg1', states.interaction.ShowMenu('Patrouille','/ui/msg'), 
+                               transitions={'success':'LoadYaml'})
+				
         smach.StateMachine.add('LoadYaml', states.interaction.LoadYaml('op_patrol', '../config/op_patrol.yaml', sm), 
                                transitions={'success':'Patrol1',  'failed':'failure'})
 			
@@ -36,7 +39,10 @@ def main():
 			transitions={'success':'MoveToHome',  'failed':'failure'})
 			
         smach.StateMachine.add('MoveToHome',  states.movement.MoveToPose(sss,'home'),
-			transitions={'success':'success',  'failed':'failure'})
+			transitions={'success':'ShowMsgReady',  'failed':'failure'})
+        
+        smach.StateMachine.add('ShowMsgReady', states.interaction.ShowMenu('Bereit','/ui/msg'), 
+                               transitions={'success':'success'})
                                             
     # Execute SMACH plan
     outcome = sm.execute()
