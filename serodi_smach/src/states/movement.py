@@ -116,9 +116,10 @@ class GetLastPose(smach.State):
 				return 'failed'
 		return 'success'
         
-import numpy
+import numpy, time
 import geometry_msgs.msg
 from geometry_msgs.msg import PoseWithCovarianceStamped
+import std_srvs.srv
 class AutoLocalize(smach.State):
     def __init__(self, sss, init_pose=None):
         smach.State.__init__(self, outcomes=['success', 'failed'])
@@ -136,9 +137,19 @@ class AutoLocalize(smach.State):
 					p.orientation.z,
 					p.orientation.w)
 			ar.append([p.position.x,p.position.y,tf.transformations.euler_from_quaternion(quaternion)[2]])
+			
+		ang_sum=0
+		for a in ar: ang_sum += a[2]
+		ang_sum /= max(1, len(ar))
+		
+		for a in ar: 
+			a[2] -= ang_sum
+			if a[2]>math.pi: a[2] -= math.pi
+			if a[2]<-math.pi: a[2] += math.pi
+			
 		ar = numpy.array(ar)
 		d = numpy.std(ar, axis=0)
-		self.std_dev = [ Math.sqrt(d[0]*d[0]+d[1]*d[1]), d[2] ]
+		self.std_dev = [ math.sqrt(d[0]*d[0]+d[1]*d[1]), d[2] ]
 
     def send_base_pose(self, x, y, rot, var_trans, var_rot):
 		# convert to pose message
@@ -224,9 +235,19 @@ class CheckLocalization:
 					p.orientation.z,
 					p.orientation.w)
 			ar.append([p.position.x,p.position.y,tf.transformations.euler_from_quaternion(quaternion)[2]])
+			
+		ang_sum=0
+		for a in ar: ang_sum += a[2]
+		ang_sum /= max(1, len(ar))
+		
+		for a in ar: 
+			a[2] -= ang_sum
+			if a[2]>math.pi: a[2] -= math.pi
+			if a[2]<-math.pi: a[2] += math.pi
+		
 		ar = numpy.array(ar)
 		d = numpy.std(ar, axis=0)
-		self.std_dev = [ Math.sqrt(d[0]*d[0]+d[1]*d[1]), d[2] ]
+		self.std_dev = [ math.sqrt(d[0]*d[0]+d[1]*d[1]), d[2] ]
 		
 		# convert to pose message
 		var_trans = self.std_dev[0]
