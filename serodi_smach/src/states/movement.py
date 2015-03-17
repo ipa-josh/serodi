@@ -5,7 +5,7 @@ import rospy
 import smach
 import smach_ros
 from simple_script_server import script
-import random, math
+import random, math, copy
 
 # Contains following states:
 # - MoveOnPath
@@ -26,17 +26,18 @@ class MoveOnPath(smach.State):
 
     def execute(self, userdata):
 		if self.reverse:
-			p = reversed(self.path)
+			p = copy.deepcopy(self.path)
+			p.reverse()
 			for i in xrange(len(p)):
 				p[i][2] = p[i][2]+math.pi
 				if p[i][2]>2*math.pi: p[i][2]-=2*math.pi
 		else:
-			p = self.path
+			p = copy.deepcopy(self.path)
+			
 		for pose in p:
 			try:
-				h = self.sss.move('base', self.pose)
-				if (not hasattr(userdata, 'nonblocking') or userdata.nonblocking==False):
-					h.wait()
+				h = self.sss.move('base', pose[0:3])
+				h.wait()
 			except:
 				return 'failed'
 		return 'success'
