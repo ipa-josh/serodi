@@ -161,6 +161,13 @@ function Map(src, parent, ros) {
 		this.on_updated_pose(this.poses);
 		return this.poses[ind];
 	}
+	this.destroy = function() {
+		clearInterval(this.refreshIntervalId);
+		this.sub_map_info.unsubscribe();
+		this.sub_localized.unsubscribe();
+		this.tfClient.unsubscribe('/base_link');
+		this.parent.remove();
+	}
 	
 	var self=this;
 	
@@ -177,6 +184,7 @@ function Map(src, parent, ros) {
 		self.update();
 		console.log("map_update ",self.map_info);
 	});
+	this.sub_map_info = sub_map_info;
 	
 	var sub_localized = new ROSLIB.Topic({
 		ros : ros,
@@ -189,6 +197,7 @@ function Map(src, parent, ros) {
 		//self.update();
 		console.log("localized ",self.pose_var);
 	});
+	this.sub_localized = sub_localized;
 	
 	// TF Client
 	// ---------
@@ -204,7 +213,8 @@ function Map(src, parent, ros) {
 		self.robot_pose = [tf.translation.x, tf.translation.y, -yaw];
 		console.log(tf);
 	});
+	this.tfClient = tfClient;
 	
 	this.update();
-	setInterval(function() {self.draw();}, 1000/200);
+	this.refreshIntervalId = setInterval(function() {self.draw();}, 1000/200);
 }
