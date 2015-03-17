@@ -32,12 +32,14 @@ def main():
         smach.StateMachine.add('Init', states.initialization.InitComponents([], sss), 
                                transitions={'succeeded':'MainMenu', 'failed':'failure'})
                                
-        smach.StateMachine.add('MainMenu', states.interaction.WaitForChoice(["canceled", "setup", "shutdown", "localization", "scenario", "loc_start", "loc_kill"]), 
+        smach.StateMachine.add('MainMenu', states.interaction.WaitForChoice(["canceled", "setup", "shutdown", "localization", "scenario", "scenario_operation", "scenario_patrol", "loc_start", "loc_kill"]), 
                                transitions={'canceled': 'Program_None', 'unknown': 'MainMenu',
 											'localization': 'Program_Localization',
 											'shutdown': 'Program_Shutdown',
 											'setup': 'Program_Setup',
 											'scenario': 'Program_Scenario',
+											'scenario_operation': 'Program_Scenario_Operation',
+											'scenario_patrol': 'Program_Scenario_Patrol',
 											
 											'loc_start': 'Intern_Localization_Start',
 											'loc_kill': 'Intern_Localization_Kill'
@@ -51,9 +53,13 @@ def main():
 						   transitions={'success':'MainMenu',  'failed':'failure'})
         smach.StateMachine.add('Program_Scenario', states.initialization.ROSLaunch('serodi_smach','scenario.launch'), 
 						   transitions={'success':'MainMenu',  'failed':'failure'})
+        smach.StateMachine.add('Program_Scenario_Operation', states.initialization.System('rosrun serodi_smach op_small.py'), 
+						   transitions={'success':'MainMenu',  'failed':'failure'})
+        smach.StateMachine.add('Program_Scenario_Patrol', states.initialization.System('rosrun serodi_smach op_patrol.py'), 
+						   transitions={'success':'MainMenu',  'failed':'failure'})
         smach.StateMachine.add('Program_Shutdown', states.initialization.System('halt'), 
 						   transitions={'success':'MainMenu',  'failed':'MainMenu'})
-						   
+			
         smach.StateMachine.add('Intern_Localization_Start', states.initialization.ROSLaunch(LOC_PKG,LOC_BIN), 
 						   transitions={'success':'MainMenu',  'failed':'MainMenu'})
         smach.StateMachine.add('Intern_Localization_Kill', states.initialization.ROSKill(LOC_PKG,LOC_BIN), 
