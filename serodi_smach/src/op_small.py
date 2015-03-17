@@ -54,6 +54,7 @@ def main():
 				smach.Sequence.add('SetLight_'+l+"_RED1", states.interaction.SetLight(sss,'red'))
 				smach.Sequence.add('SetLight_'+l+"_RED2", states.interaction.SetLight(sss,'red', light))
 				smach.Sequence.add('MoveTo_'+l, states.movement.MoveToPose(sss,light['pose']))
+				smach.Sequence.add('WaitAt_'+l, states.interaction.Wait(5))
 				smach.Sequence.add('SetLight_'+l+"_GREEN1", states.interaction.SetLight(sss,'green'))
 				smach.Sequence.add('SetLight_'+l+"_GREEN2", states.interaction.SetLight(sss,'green', light))
 				
