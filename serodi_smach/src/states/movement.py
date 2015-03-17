@@ -222,6 +222,8 @@ class AutoLocalize(smach.State):
 				angle = tf.transformations.euler_from_quaternion(quaternion)[2]
 				h = self.sss.move('base', [x,y,angle])
 				h.wait()
+				
+			rospy.set_param('/ui/is_localized', True)
 			
 		except:
 			self.sub_pa.unregister()
