@@ -250,7 +250,7 @@ public:
 			
 		ros::NodeHandle pn("~");
 		
-		pn.param<double>("radius", radius_, 0.65);
+		pn.param<double>("radius", radius_, 0.75);
 		
 		pn.param<std::string>("robot_base_frame", robot_base_frame_, std::string("/base_link"));
 		pn.param<std::string>("global_frame", global_frame_, std::string("/map"));
