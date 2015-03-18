@@ -94,7 +94,7 @@ class System(smach.State):
         self.cmd = cmd
 
     def execute(self, userdata):
-		if not os.system(self.cmd):
+		if os.system(self.cmd)!=0:
 			return 'failed'
 				
 		return 'success'
