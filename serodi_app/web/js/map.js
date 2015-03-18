@@ -174,6 +174,7 @@ function Map(src, parent, ros) {
 	}
 	this.clearPoses = function() {
 		this.poses = [];
+		this.active_pose=false;
 		this.on_updated_pose(this.poses);
 	}
 	this.addPose = function(x,y,yaw,txt) {
