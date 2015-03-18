@@ -54,7 +54,7 @@ class ROSLaunch(smach.State):
 			userdata.running_processes={}
 		if self.package+' '+self.launchfile in userdata.running_processes:
 			userdata.running_processes[self.package+' '+self.launchfile].terminate()
-		userdata.running_processes[self.package+' '+self.launchfile] = subprocess.Popen(['roslaunch',self.package,self.launchfile], stdout=subprocess.PIPE)
+		userdata.running_processes[self.package+' '+self.launchfile] = subprocess.Popen(['roslaunch',self.package,self.launchfile])
 		
 		rospy.sleep(0.2)
 		#Todo: check if true or false
@@ -94,7 +94,7 @@ class System(smach.State):
         self.cmd = cmd
 
     def execute(self, userdata):
-		if not os.system(self.cmd):
+		if os.system(self.cmd)!=0:
 			return 'failed'
 				
 		return 'success'
