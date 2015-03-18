@@ -27,10 +27,10 @@ def main():
 
     # Open the container
     with sm:
-        smach.StateMachine.add('WaitBeforeInit', states.interaction.Wait(20), 
+        smach.StateMachine.add('WaitBeforeInit', states.interaction.Wait(5), 
                                transitions={'success':'Init'})
-        smach.StateMachine.add('Init', states.initialization.InitComponents([], sss), 
-                               transitions={'succeeded':'MainMenu', 'failed':'failure'})
+        smach.StateMachine.add('Init', states.initialization.InitComponents(["base"], sss), 
+                               transitions={'succeeded':'MainMenu', 'failed':'WaitBeforeInit'})
                                
         smach.StateMachine.add('MainMenu', states.interaction.WaitForChoice(["canceled", "setup", "shutdown", "localization", "scenario", "scenario_operation", "scenario_patrol", "loc_start", "loc_kill"]), 
                                transitions={'canceled': 'Program_None', 'unknown': 'MainMenu',
