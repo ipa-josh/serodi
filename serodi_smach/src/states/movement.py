@@ -36,7 +36,7 @@ class MoveOnPath(smach.State):
 			
 		for pose in p:
 			try:
-				h = self.sss.move('base', pose[0:3])
+				h = self.sss.move('base', pose[0:3], mode='linear')
 				h.wait()
 			except:
 				return 'failed'
@@ -51,7 +51,7 @@ class MoveToPose(smach.State):
 
     def execute(self, userdata):
 		try:
-			h = self.sss.move('base', self.pose[0:3])
+			h = self.sss.move('base', self.pose[0:3], mode='linear')
 			if (not hasattr(userdata, 'nonblocking') or userdata.nonblocking==False):
 				h.wait()
 		except:
@@ -381,7 +381,7 @@ class AutoLocalize(smach.State):
 					res.result.pose.orientation.z,
 					res.result.pose.orientation.w)
 				angle = tf.transformations.euler_from_quaternion(quaternion)[2]
-				h = self.sss.move('base', [x,y,angle], False)
+				h = self.sss.move('base', [x,y,angle], False,mode='linear')
 				h.wait(20.)
 				
 			rospy.set_param('/ui/is_localized', True)
