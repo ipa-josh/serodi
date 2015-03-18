@@ -132,11 +132,11 @@ class MoveRel_Registration(smach.State):
 				if data[i]>0 and self.teachin[j]>0 and delta<self.max_matching_dist:
 					energy += delta
 					matched += 1
-			print o, "matched ",matched
+			#print o, "matched ",matched
 			if matched<0.3*len(data):
 				continue
 			energy /= matched
-			print "energy ",energy
+			#print "energy ",energy
 			
 			if len(best)==0 or best[0]>energy:
 				best = [energy, o]
@@ -170,6 +170,7 @@ class MoveRel_Registration(smach.State):
 			smach.logerr("could not find enough matches")
 			return None
 			
+		print "trans offset ",[sdx/matched, sdy/matched]
 		return [sdx/matched, sdy/matched]
 			
     def wait_for_data(self):
