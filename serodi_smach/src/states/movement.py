@@ -63,7 +63,7 @@ class MoveRel(smach.State):
     def __init__(self, sss, motion):
         smach.State.__init__(self, outcomes=['success', 'failed'], input_keys=['text','nonblocking'])
         self.sss = sss
-        self.pose = motion
+        self.motion = motion
 
     def execute(self, userdata):
 		try:
@@ -91,7 +91,7 @@ class ReadDataForRegistration(smach.State):
 		return self.data
 
     def execute(self, userdata):
-		self.sub = rospy.Subscriber("/somescan", sensor_msgs.msg.LaserScan, self.on_data)
+		self.sub = rospy.Subscriber("/scan_unified", sensor_msgs.msg.LaserScan, self.on_data)
 		
 		s = [userdata.data]
 		for dd in self.dest_name[0:len(self.dest_name)-1]:
