@@ -182,13 +182,12 @@ class MoveRel_Registration(smach.State):
     def move(self,m):
 		print "going to move relative by ",m
 		
-		#h = self.sss.move_base_rel('base', m)
-		#if (not hasattr(userdata, 'nonblocking') or userdata.nonblocking==False):
-		#	h.wait()
+		h = self.sss.move_base_rel('base', m)
+		h.wait()
 
     def execute(self, userdata):
 		print self.teachin
-		self.sub = rospy.Subscriber("/somescan", sensor_msgs.msg.LaserScan, self.on_data)
+		self.sub = rospy.Subscriber("/scan_unified", sensor_msgs.msg.LaserScan, self.on_data)
 		
 		if True:#try:
 			
@@ -198,7 +197,7 @@ class MoveRel_Registration(smach.State):
 				angle = self.get_angle(self.wait_for_data())
 				if angle==None: raise
 				if abs(angle)<0.03: break
-				self.move([0,0,angle])
+				self.move([0,0,-angle])
 				s+=abs(angle)
 				
 			
@@ -211,7 +210,7 @@ class MoveRel_Registration(smach.State):
 				dist = math.sqrt( trans[0]*trans[0] + trans[1]*trans[1] )
 				if dist<0.03: break
 				
-				self.move([trans[0],trans[1],0])
+				self.move([-trans[0],-trans[1],0])
 				s += dist
 			
 		#except:
