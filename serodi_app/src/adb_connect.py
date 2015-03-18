@@ -13,5 +13,5 @@ if __name__ == '__main__':
 		os.system("adb shell am start -n com.icecoldapps.sshserver/.viewStart")
 		os.system("adb forward tcp:2222 tcp:2222")
 		time.sleep(5)
-		os.system("(ssh -R 9090:localhost:9090 serodi@localhost -p 2222 & );ssh -R 38300:localhost:38300 serodi@localhost -p 2222")
+		os.system("(ssh -o ServerAliveInterval=100 -R 9090:localhost:9090 serodi@localhost -p 2222 & );ssh -o ServerAliveInterval=100 -R 38300:localhost:38300 serodi@localhost -p 2222")
 		time.sleep(0.2)
