@@ -65,7 +65,7 @@ class ROSLaunch(smach.State):
         
 class ROSKill(smach.State):
     def __init__(self, package, launchfile):
-        smach.State.__init__(self, outcomes=['pass'], input_keys=['running_processes'], output_keys=['running_processes'])
+        smach.State.__init__(self, outcomes=['success'], input_keys=['running_processes'], output_keys=['running_processes'])
         self.package = package
         self.launchfile = launchfile
 
@@ -85,7 +85,7 @@ class ROSKill(smach.State):
 			userdata.running_processes[self.package+' '+self.launchfile].terminate()
 			userdata.running_processes.pop(self.package+' '+self.launchfile)
 				
-		return 'pass'
+		return 'success'
 		
 import os
 class System(smach.State):
