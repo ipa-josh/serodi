@@ -294,19 +294,34 @@ class SetLight(smach.State):
 			
 			set_light = rospy.ServiceProxy('/fs20switch', serodi_lights.srv.FS20Switch)
 			
-			req.addr_fs20 = addr1
-			req.on = (self.color=="red")
-			res = set_light( req )
-			if res.success != True:
-				smach.logerr(res.error_msg)
-				return 'failed'
-			
-			req.addr_fs20 = addr2
-			req.on = (self.color=="green")
-			res = set_light( req )
-			if res.success != True:
-				smach.logerr(res.error_msg)
-				return 'failed'
+			if self.color=="red":
+				req.addr_fs20 = addr2
+				req.on = (self.color=="green")
+				res = set_light( req )
+				if res.success != True:
+					smach.logerr(res.error_msg)
+					return 'failed'
+					
+				req.addr_fs20 = addr1
+				req.on = (self.color=="red")
+				res = set_light( req )
+				if res.success != True:
+					smach.logerr(res.error_msg)
+					return 'failed'
+			else:
+				req.addr_fs20 = addr1
+				req.on = (self.color=="red")
+				res = set_light( req )
+				if res.success != True:
+					smach.logerr(res.error_msg)
+					return 'failed'
+				
+				req.addr_fs20 = addr2
+				req.on = (self.color=="green")
+				res = set_light( req )
+				if res.success != True:
+					smach.logerr(res.error_msg)
+					return 'failed'
 		else:
 			print self.color
 			self.sss.set_light("light_base", self.color)
