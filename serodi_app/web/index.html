@@ -212,7 +212,7 @@
 		open: function( event, ui ) {resize_dialogs();}
 	}).prev(".ui-dialog-titlebar").css("font-weight","bold").css("font-size","300%").css("text-align","center").css("padding", "0.4em 0.2em");
 
-	$(".ui-dialog-titlebar").css('width','98%').append('<img src="images/ipa.gif" height="40px" style="float:right; top:0px;" />');
+	//$(".ui-dialog-titlebar").css('width','98%').append('<img src="images/ipa.gif" height="40px" style="float:right; top:0px;" />');
 	
 	
 	function resize_dialogs() {
@@ -376,6 +376,7 @@
     console.log("ui msg: ",message);
     
     $("#dialog_scenario").dialog('option', 'title', message.data);
+	$("#dialog_scenario").css('height','79%');
     
     if(message.data.search("Warte auf")!=-1)
 		$("#message_btn1").show();
@@ -513,9 +514,9 @@
 </div>
 	
 <div id="dialog_scenario" title="Pflegewagenverwaltung">
-	<p><br />
-		<button id="message_btn1" style="font-size: 200%;margin-left: auto; margin-right: auto; width: 100%;">Pflegekraft anwesend</button>
-		<button id="message_btn2" style="font-size: 200%;margin-left: auto; margin-right: auto; width: 100%;">Freigabe</button>
+	<p>
+		<button id="message_btn1" style="font-size: 150%;margin-left: auto; margin-right: auto; width: 100%;">Pflegekraft anwesend</button>
+		<button id="message_btn2" style="font-size: 150%;margin-left: auto; margin-right: auto; width: 100%;">Freigabe</button>
 	</p>
 <!--p>
 	If the green light is on you can pause the scenario.
@@ -569,12 +570,11 @@
 <div id="trash" class="gallery_box ui-widget-content ui-state-default" style="width: 47%; height: 20em;">
   <h4 class="ui-widget-header"><span class="ui-icon ui-icon-trash">Verbrauch</span>Verbrauch</h4>
 </div>
- 
 </div>
 
-	<p>
-		<img src="images/ipa.gif" height="50px" style="float:left;" />
-		<img src="images/serodi.png" height="50px" style="float:right;" />
+	<p style="height: 20px">
+		<img src="images/ipa.gif" height="50px" style="float:left;position:absolute; bottom:5px;" />
+		<img src="images/serodi.png" height="50px" style="float:right;position:absolute; bottom:5px;right:30px;" />
 	</p>
 </div>
  

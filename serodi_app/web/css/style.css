@@ -12,6 +12,7 @@
   .gallery_box .gallery h5 { display: none; }
 
 #dialog_scenario .ui-dialog-title {font-weight: bold;font-size: 300%;width:100%;text-align:center;}
+#dialog_scenario {height: 79% !important;}
 
 .disabled
 {
