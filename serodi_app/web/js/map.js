@@ -42,7 +42,7 @@ function Map(src, parent, ros) {
 			if(this.obj.settings['add_enabled'] && this.obj.robot_pose &&
 				x>=4 && x<=this.obj.icon['add'].width+4 &&
 				y>=4 && y<=this.obj.icon['add'].height+4 ) {
-				this.obj.active_pose = this.obj.addPose(this.obj.robot_pose[0],this.obj.robot_pose[1],this.obj.robot_pose[2], "");
+				this.obj.addPose(this.obj.robot_pose[0],this.obj.robot_pose[1],this.obj.robot_pose[2], "");
 				return;
 			}
 			
