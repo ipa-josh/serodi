@@ -230,8 +230,9 @@ class MapNode {
 		}
 					
 		if(poses.size()<2) {
+			res.success = false;
 			ROS_ERROR("failed to get any pose");
-			return false;
+			return true;
 		}
 		res.result.pose = poses[1];
 		map2pose(res.result.pose.position.x, res.result.pose.position.y, res.result.pose.position.x, res.result.pose.position.y);
