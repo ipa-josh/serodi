@@ -21,6 +21,7 @@ def main():
     
     sm.userdata.data = {'op_small':{}}
     sm.userdata.running_processes = {}
+    sm.userdata.nonblocking = False
     
     LOC_PKG="serodi_mapping"
     LOC_BIN="nav_eband.launch"
