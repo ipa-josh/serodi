@@ -46,6 +46,28 @@ class MoveOnPath(smach.State):
 				return 'failed'
 		return 'success'
 
+class MoveOnPathRel(smach.State):
+    def __init__(self, sss, path, scans):
+        smach.State.__init__(self, outcomes=['success', 'failed'], input_keys=['text','nonblocking'])
+        self.sss = sss
+        self.path = path
+        self.scans = scans
+        if len(path)!=len(scans):
+			raise Exception("unmatched length")
+
+    def execute(self, userdata):
+		for i in xrange(len(self.path)):
+			pose = self.path[i]
+			scan = self.scans[i]
+			if True:#try:
+				h = self.sss.move_base_rel('base', pose[0:3])
+				s = MoveRel_Registration(self.sss,scan)
+				if s.execute(userdata)!='success':
+					return 'failed'
+			#except:
+			#	return 'failed'
+		return 'success'
+
 
 class MoveToPose(smach.State):
     def __init__(self, sss, pose):
