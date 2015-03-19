@@ -355,7 +355,7 @@ class AutoLocalize(smach.State):
 		while self.sub_pa.get_num_connections()<1:
 			time.sleep(0.1)
 		
-		if True:#try:
+		try:
 			#set pose
 			print "init. pose ",self.init_pose
 			
@@ -364,6 +364,7 @@ class AutoLocalize(smach.State):
 			else:
 				self.global_localization()
 				
+			tries=0
 			while self.std_dev==None or self.std_dev[0]>0.25 or self.std_dev[1]>0.15:
 				print "deviation is ",self.std_dev
 				
@@ -382,8 +383,11 @@ class AutoLocalize(smach.State):
 					time.sleep(10)
 				
 				if res.success == False:
+					tries += 1
+					if tries < 5: continue
 					smach.logerr("failed to get a free pose")
 					return 'failed'
+				tries = 0
 				
 				#move to pose
 				x = res.result.pose.position.x
@@ -399,9 +403,9 @@ class AutoLocalize(smach.State):
 				
 			rospy.set_param('/ui/is_localized', True)
 			
-		#except:
-		#	self.sub_pa.unregister()
-		#	return 'failed'
+		except:
+			self.sub_pa.unregister()
+			return 'failed'
 		self.sub_pa.unregister()
 		return 'success'
 
