@@ -367,6 +367,13 @@ class AutoLocalize(smach.State):
 			while self.std_dev==None or self.std_dev[0]>0.25 or self.std_dev[1]>0.15:
 				print "deviation is ",self.std_dev
 				
+				angle=0
+				while abs(angle)<0.1:
+					angle = random.uniform(-1., 1.)
+				for li in xrange(3):
+					h = self.sss.move_base_rel('base', [0,0,angle])
+					h.wait()
+				
 				#get random pose
 				for tries in xrange(10):
 					check = rospy.ServiceProxy('/get_pose_free', cob_srvs.srv.GetPoseStampedTransformed)
