@@ -24,6 +24,8 @@ def main(do_setup):
     sm.userdata.data = {'op_small':{}, 'op_patrol':{}}
     sm.userdata.running_processes = {}
 
+    mapping_launch = '2dnav_eband.launch'
+	
     # Open the container
     with sm:
 		sq = smach.Sequence(
@@ -36,12 +38,12 @@ def main(do_setup):
 			smach.Sequence.add('StopLocalization', states.interaction.SendChoice('loc_kill'))
 			smach.Sequence.add('WaitM1', states.interaction.Wait(10))
 			if do_setup:
-				smach.Sequence.add('Mapping1', states.initialization.ROSLaunch('serodi_mapping','2dnav_ros_dwa.launch'))
+				smach.Sequence.add('Mapping1', states.initialization.ROSLaunch('serodi_mapping',mapping_launch))
 				smach.Sequence.add('WaitM2', states.interaction.Wait(10))
 				smach.Sequence.add('Mapping2', states.movement.Explore(sss))
 				smach.Sequence.add('SaveMap', states.initialization.System("rosrun map_server map_saver -f ~/map"))
 				smach.Sequence.add('LastPose', states.movement.GetLastPose(last_pose))
-				smach.Sequence.add('MappingKill', states.initialization.ROSKill('serodi_mapping','2dnav_ros_dwa.launch'))
+				smach.Sequence.add('MappingKill', states.initialization.ROSKill('serodi_mapping',mapping_launch))
 				smach.Sequence.add('UI_MappingDone', states.interaction.ShowMenu('next'))
 			
 			smach.Sequence.add('Localization1', states.interaction.SendChoice('loc_start'))

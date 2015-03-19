@@ -23,7 +23,7 @@ def main():
     sm.userdata.running_processes = {}
     
     LOC_PKG="serodi_mapping"
-    LOC_BIN="nav.launch"
+    LOC_BIN="nav_eband.launch"
 
     # Open the container
     with sm:
