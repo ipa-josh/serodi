@@ -76,6 +76,14 @@
 				btn_enable($("setup_4_confirm"), false);
 				map.update();
 			}
+				
+			if(newIndex-1==IND_PATH) {
+				if(!(map.poses.length>1)) return false;
+			}
+				
+			if(newIndex-1==IND_LIGHT) {
+				if(!(map.poses.length!=known_lights.length)) return false;
+			}
 			
 			if(newIndex==IND_PATH) {
 				
@@ -88,10 +96,6 @@
 				}
 				if(currentIndex!=newIndex) map.clearPoses();
 				map.update();
-			}
-				
-			if(newIndex-1==IND_PATH) {
-				return map.poses.length>1;
 			}
 			
 			if(newIndex==IND_LIGHT) {
@@ -113,10 +117,6 @@
 					//if(newIndex==4) map.addPose(0,0,0, "");
 				}
 				map.update();
-			}
-				
-			if(newIndex-1==IND_LIGHT) {
-				return map.poses.length!=known_lights.length;
 			}
 			
 			return true;
