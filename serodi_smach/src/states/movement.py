@@ -51,7 +51,7 @@ class MoveToPose(smach.State):
 
     def execute(self, userdata):
 		try:
-			h = self.sss.move('base', self.pose)
+			h = self.sss.move('base', self.pose[0:3])
 			if (not hasattr(userdata, 'nonblocking') or userdata.nonblocking==False):
 				h.wait()
 		except:
@@ -250,8 +250,8 @@ class Explore(smach.State):
 					res.result.pose.orientation.z,
 					res.result.pose.orientation.w)
 				angle = tf.transformations.euler_from_quaternion(quaternion)[2]
-				h = self.sss.move('base', [x,y,angle])
-				h.wait()
+				h = self.sss.move('base', [x,y,angle],False)
+				h.wait(20.)
 			
 		except:
 			return 'failed'
@@ -381,8 +381,8 @@ class AutoLocalize(smach.State):
 					res.result.pose.orientation.z,
 					res.result.pose.orientation.w)
 				angle = tf.transformations.euler_from_quaternion(quaternion)[2]
-				h = self.sss.move('base', [x,y,angle])
-				h.wait()
+				h = self.sss.move('base', [x,y,angle], False)
+				h.wait(20.)
 				
 			rospy.set_param('/ui/is_localized', True)
 			

@@ -46,7 +46,7 @@ def main():
 											})
 			
         smach.StateMachine.add('Program_None', states.initialization.ROSKill(None, [LOC_PKG+' '+LOC_BIN] ), 
-						   transitions={'pass':'MainMenu'})
+						   transitions={'success':'MainMenu'})
         smach.StateMachine.add('Program_Setup', states.initialization.ROSLaunch('serodi_smach','mapping.launch'), 
 						   transitions={'success':'MainMenu',  'failed':'failure'})
         smach.StateMachine.add('Program_Localization', states.initialization.ROSLaunch('serodi_smach','localization.launch'), 
@@ -63,7 +63,7 @@ def main():
         smach.StateMachine.add('Intern_Localization_Start', states.initialization.ROSLaunch(LOC_PKG,LOC_BIN), 
 						   transitions={'success':'MainMenu',  'failed':'MainMenu'})
         smach.StateMachine.add('Intern_Localization_Kill', states.initialization.ROSKill(LOC_PKG,LOC_BIN), 
-						   transitions={'pass':'MainMenu'})
+						   transitions={'success':'MainMenu'})
                                             
     # Execute SMACH plan
     outcome = sm.execute()

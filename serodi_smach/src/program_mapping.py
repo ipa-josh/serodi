@@ -41,6 +41,7 @@ def main(do_setup):
 				smach.Sequence.add('Mapping2', states.movement.Explore(sss))
 				smach.Sequence.add('SaveMap', states.initialization.System("rosrun map_server map_saver -f ~/map"))
 				smach.Sequence.add('LastPose', states.movement.GetLastPose(last_pose))
+				smach.Sequence.add('MappingKill', states.initialization.ROSKill('serodi_mapping','2dnav_ros_dwa.launch'))
 				smach.Sequence.add('UI_MappingDone', states.interaction.ShowMenu('next'))
 			
 			smach.Sequence.add('Localization1', states.interaction.SendChoice('loc_start'))
@@ -64,7 +65,7 @@ def main(do_setup):
 				
 			smach.StateMachine.add('Localization2_Zero', states.interaction.ShowMenu('next'),
 				transitions={'success': 'Localization2_Zero2'})
-			smach.StateMachine.add('Localization2_Zero2', states.movement.AutoLocalize(sss, [0,0,0]),
+			smach.StateMachine.add('Localization2_Zero2', states.movement.AutoLocalize(sss, [[0,0,0]]),
 				transitions={'success': 'Main2', 'failed': 'failure'})
 				
 		sq = smach.Sequence(
@@ -81,7 +82,7 @@ def main(do_setup):
 				
 				smach.Sequence.add('SetLightPoses', states.interaction.ReadVariableFromChoice('lights', 'op_small.lights'))
 				smach.Sequence.add('SaveLightPoses', states.interaction.SaveYaml('op_small', '../config/op_small.yaml'))
-				smach.Sequence.add('UI_SetLightPosesDone', states.interaction.ShowMenu('next'))
+			smach.Sequence.add('UI_SetLightPosesDone', states.interaction.ShowMenu('next'))
 			
 		smach.StateMachine.add('Main2', sq, 
 						   transitions={'success':'success',  'failed':'failure'})
