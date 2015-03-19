@@ -68,7 +68,7 @@ class MoveRel(smach.State):
     def __init__(self, sss, motion):
         smach.State.__init__(self, outcomes=['success', 'failed'], input_keys=['text','nonblocking'])
         self.sss = sss
-        self.pose = motion
+        self.motion = motion
 
     def execute(self, userdata):
 		try:
@@ -96,7 +96,7 @@ class ReadDataForRegistration(smach.State):
 		return self.data
 
     def execute(self, userdata):
-		self.sub = rospy.Subscriber("/somescan", sensor_msgs.msg.LaserScan, self.on_data)
+		self.sub = rospy.Subscriber("/scan_unified", sensor_msgs.msg.LaserScan, self.on_data)
 		
 		s = [userdata.data]
 		for dd in self.dest_name[0:len(self.dest_name)-1]:
@@ -137,11 +137,11 @@ class MoveRel_Registration(smach.State):
 				if data[i]>0 and self.teachin[j]>0 and delta<self.max_matching_dist:
 					energy += delta
 					matched += 1
-			print o, "matched ",matched
+			#print o, "matched ",matched
 			if matched<0.3*len(data):
 				continue
 			energy /= matched
-			print "energy ",energy
+			#print "energy ",energy
 			
 			if len(best)==0 or best[0]>energy:
 				best = [energy, o]
@@ -175,6 +175,7 @@ class MoveRel_Registration(smach.State):
 			smach.logerr("could not find enough matches")
 			return None
 			
+		print "trans offset ",[sdx/matched, sdy/matched]
 		return [sdx/matched, sdy/matched]
 			
     def wait_for_data(self):
@@ -186,13 +187,12 @@ class MoveRel_Registration(smach.State):
     def move(self,m):
 		print "going to move relative by ",m
 		
-		#h = self.sss.move_base_rel('base', m)
-		#if (not hasattr(userdata, 'nonblocking') or userdata.nonblocking==False):
-		#	h.wait()
+		h = self.sss.move_base_rel('base', m)
+		h.wait()
 
     def execute(self, userdata):
 		print self.teachin
-		self.sub = rospy.Subscriber("/somescan", sensor_msgs.msg.LaserScan, self.on_data)
+		self.sub = rospy.Subscriber("/scan_unified", sensor_msgs.msg.LaserScan, self.on_data)
 		
 		if True:#try:
 			
@@ -202,7 +202,7 @@ class MoveRel_Registration(smach.State):
 				angle = self.get_angle(self.wait_for_data())
 				if angle==None: raise
 				if abs(angle)<0.03: break
-				self.move([0,0,angle])
+				self.move([0,0,-angle])
 				s+=abs(angle)
 				
 			
@@ -215,7 +215,7 @@ class MoveRel_Registration(smach.State):
 				dist = math.sqrt( trans[0]*trans[0] + trans[1]*trans[1] )
 				if dist<0.03: break
 				
-				self.move([trans[0],trans[1],0])
+				self.move([-trans[0],-trans[1],0])
 				s += dist
 			
 		#except:
