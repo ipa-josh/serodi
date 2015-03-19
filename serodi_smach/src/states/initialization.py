@@ -70,6 +70,7 @@ class ROSKill(smach.State):
         self.launchfile = launchfile
 
     def execute(self, userdata):
+		print "ROSKILL", userdata.running_processes
 		if self.package==None:
 			found = True
 			while found:
@@ -77,11 +78,13 @@ class ROSKill(smach.State):
 				for k in userdata.running_processes:
 					if k in self.launchfile: continue
 					
+					print "kill ",k
 					userdata.running_processes[k].terminate()
 					userdata.running_processes.pop(k)
 					found = True
 					break
 		elif hasattr(userdata,'running_processes') and self.package+' '+self.launchfile in userdata.running_processes:
+			print "kill2 ",self.launchfile
 			userdata.running_processes[self.package+' '+self.launchfile].terminate()
 			userdata.running_processes.pop(self.package+' '+self.launchfile)
 				

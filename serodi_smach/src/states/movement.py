@@ -355,7 +355,7 @@ class AutoLocalize(smach.State):
 		while self.sub_pa.get_num_connections()<1:
 			time.sleep(0.1)
 		
-		try:
+		if True:#try:
 			#set pose
 			print "init. pose ",self.init_pose
 			
@@ -399,9 +399,9 @@ class AutoLocalize(smach.State):
 				
 			rospy.set_param('/ui/is_localized', True)
 			
-		except:
-			self.sub_pa.unregister()
-			return 'failed'
+		#except:
+		#	self.sub_pa.unregister()
+		#	return 'failed'
 		self.sub_pa.unregister()
 		return 'success'
 

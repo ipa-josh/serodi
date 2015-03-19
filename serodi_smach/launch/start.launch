@@ -10,4 +10,6 @@
   
   <node name="tf2_web_republisher" pkg="tf2_web_republisher" type="tf2_web_republisher" />
   <node name="smach_overall" pkg="serodi_smach" type="overall.py" output="screen" cwd="node"/>
+  
+  <node name="serodi_lights" pkg="serodi_lights" type="interface_dummy.py" />
 </launch>

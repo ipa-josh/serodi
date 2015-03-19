@@ -1,11 +1,11 @@
 lights:
 - addr_fs20: '3321'
   housecode: '12344321'
-  name: Vorne
-  pose: [7.715698778843446, 2.3249545007808123, -0.32325578764415874, '1.']
+  name: Zimmer 1
+  pose: [0.54, 1.14, -1.7, '1.']
   waiting_time: 10
 - addr_fs20: '3231'
   housecode: '12344321'
-  name: Hinten
-  pose: [7.771050159991038, 2.3865611263220607, -0.6495382260996092, '2.']
+  name: Zimmer 2
+  pose: [-0.95, 0.65, -1.25, '2.']
   waiting_time: 10

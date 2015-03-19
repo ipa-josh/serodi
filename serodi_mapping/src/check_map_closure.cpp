@@ -220,11 +220,13 @@ class MapNode {
 		
 		res.success = vis_graph(cur_x, cur_y,
 					tf::getYaw(pose.getRotation()), map_recv_*radius_*map_recv_.getOccMap(), (int)(radius_/resolution+0.99), 0.8, 1, poses);
+			cv::imwrite(map_dir_+"/dbg_map_occ_inflated_FREE1.png", map_recv_*radius_*map_recv_.getOccMap());
 			
 		if(poses.size()<2) {
 			poses.clear();
 			res.success = vis_graph(cur_x, cur_y,
 						tf::getYaw(pose.getRotation()), map_recv_*radius_*map_recv_.getOccMap(), (int)(radius_/(resolution*2)+0.99), 0., 1, poses);
+				cv::imwrite(map_dir_+"/dbg_map_occ_inflated_FREE2.png", map_recv_*radius_*map_recv_.getOccMap());
 		}
 					
 		if(poses.size()<2) {
