@@ -87,6 +87,7 @@ def main(do_setup):
 				smach.Sequence.add('SetLightPoses', states.interaction.ReadVariableFromChoice('lights', 'op_small.lights'))
 				smach.Sequence.add('SaveLightPoses', states.interaction.SaveYaml('op_small', '../config/op_small.yaml'))
 			smach.Sequence.add('UI_SetLightPosesDone', states.interaction.ShowMenu('next'))
+			smach.Sequence.add('WaitBeforeFinish', states.interaction.Wait(10))
 			
 		smach.StateMachine.add('Main2', sq, 
 						   transitions={'success':'success',  'failed':'failure'})
