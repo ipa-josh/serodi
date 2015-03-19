@@ -58,7 +58,7 @@ def main():
 						   transitions={'success':'MainMenu',  'failed':'failure'})
         smach.StateMachine.add('Program_Scenario_Patrol', states.initialization.ROSLaunch('serodi_smach','scenario_patrol.launch'), 
 						   transitions={'success':'MainMenu',  'failed':'failure'})
-        smach.StateMachine.add('Program_Shutdown', states.initialization.System('halt'), 
+        smach.StateMachine.add('Program_Shutdown', states.initialization.System('cob-shutdown'), 
 						   transitions={'success':'MainMenu',  'failed':'MainMenu'})
 			
         smach.StateMachine.add('Intern_Localization_Start', states.initialization.ROSLaunch(LOC_PKG,LOC_BIN), 
