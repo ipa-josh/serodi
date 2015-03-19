@@ -1,0 +1,61 @@
+<launch>
+		<arg name="map" value="/home/josh/map.yaml" />
+			   
+		<param name="/ui/is_localized" type="bool" value="false" />
+
+  <!-- roslaunch arguments-->
+  <arg name="robot" default="$(optenv ROBOT !!NO_ROBOT_SET!!)"/>
+
+  <!-- environment seetings -->
+  <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)"/>
+  <arg name="env_pack" default="$(find cob_default_env_config)" />
+  <arg name="map_server" default="true" />
+  <arg name="grid_converter" default="false" />
+
+  <!-- sensor seetings -->
+  <arg name="sensor_config" default="$(find ipa_navigation_config)/config/sensor_setups/raw3-1-full.yaml" />
+  <arg name="slam" default="false"/>
+  <arg name="imu_driver" default="false"/>
+  <arg name="rfid" default="false"/>
+  <arg name="unified_karto_laser_scan" default="true"/>
+  <arg name="scan_unifier_param_file" default="$(find cob_navigation_config)/$(arg robot)/scan_unifier_config.yaml"/>
+  <arg name="filter_karto_laser_scan" default="false"/>
+  <arg name="license_package" default=""/>
+
+  <!-- odometry settings -->
+  <arg name="dead_reck" default="false" />
+
+  <!-- planner settings -->
+  <arg name="carlike" default="false"/>
+  <arg name="trajectory_global_planner" default="false"/>
+
+  <!--- Run IPA localization -->
+  <!--include file="$(find ipa_navigation_bringup)/launch/ipa_localization.xml" >
+    <arg name="robot" value="$(arg robot)" />
+    <arg name="robot_env" value="$(arg robot_env)" />
+    <arg name="env_pack" value="$(arg env_pack)" />
+    <arg name="map" value="$(arg map)" />
+    <arg name="slam" value="$(arg slam)" />
+    <arg name="imu_driver" value="$(arg imu_driver)" />
+    <arg name="rfid" value="$(arg rfid)" />
+    <arg name="map_server" value="$(arg map_server)" />
+    <arg name="grid_converter" value="$(arg grid_converter)" />
+    <arg name="sensor_config" value="$(arg sensor_config)" /> 
+    <arg name="dead_reck" value="$(arg dead_reck)" /> 
+  </include-->
+
+	<!--- Run AMCL -->
+	<node name="map_server" pkg="map_server" type="map_server" args="$(arg map)"/>
+	<include file="$(find cob_navigation_global)/launch/amcl_node.xml" >
+		<arg name="robot" value="$(arg robot)"/>
+	</include>
+
+  <!--- Run move base -->
+  <include file="$(find ipa_navigation_bringup)/components/move_base_eband.xml" >
+    <arg name="robot" value="$(arg robot)"/>
+    <arg name="carlike" value="$(arg carlike)"/>
+    <arg name="trajectory_global_planner" value="$(arg trajectory_global_planner)"/>
+
+  </include>
+
+</launch>

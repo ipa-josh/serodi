@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<launch>
+
+	<arg name="robot" default="$(optenv ROBOT !!NO_ROBOT_SET!!)"/>
+	<arg name="unified_laser_scan" default="true"/>
+	<arg name="carlike" default="false"/>
+	<arg name="trajectory_global_planner" default="false"/>
+
+	<!-- dynamic map generation -->
+	<include file="$(find cob_mapping_slam)/launch/2dslam.xml">
+	  <arg name="unified_laser_scan" value="$(arg unified_laser_scan)"/>
+	</include>
+
+  <!--- Run move base -->
+  <include file="$(find ipa_navigation_bringup)/components/move_base_eband.xml" >
+    <arg name="robot" value="$(arg robot)"/>
+    <arg name="carlike" value="$(arg carlike)"/>
+    <arg name="trajectory_global_planner" value="$(arg trajectory_global_planner)"/>
+
+  </include>
+
+
+</launch>
