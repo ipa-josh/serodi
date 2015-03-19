@@ -47,11 +47,12 @@
 			btn_enable($("#start_scenario_patrol"), false);
 			btn_enable($("#start_scenario_operation"), false);
 			
-		  (new ROSLIB.Param({ros : ros, name : '/ui/is_initialized'})).get(function(value) {
+		  (new ROSLIB.Param({ros : ros, name : '/ui/is_localized'})).get(function(value) {
 				btn_enable($("#start_scenario"), value);
 				btn_enable($("#start_scenario_patrol"), value);
 				btn_enable($("#start_scenario_operation"), value);
-				$("#overwrite_loc").show(value);
+				if(value) $("#overwrite_loc").hide();
+				else $("#overwrite_loc").show();
 		  });
 		}
     });
