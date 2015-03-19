@@ -3,8 +3,8 @@
 import sys, os
 import rospy
 import cob_srvs.srv
+import cob_msgs.msg
 import sensor_msgs.msg
-import cob_relayboard.msg
 import time
 import states.movement 
 
@@ -48,7 +48,7 @@ def restart_base(req):
 
 if __name__ == "__main__":
 	rospy.init_node('background', anonymous=True)
-	rospy.Subscriber("/emergency", cob_relayboard.msg.EmergencyStopState, cb_em)
+	rospy.Subscriber("/emergency_stop_state", cob_msgs.msg.EmergencyStopState, cb_em)
 	sub_js = rospy.Subscriber("/joint_states", sensor_msgs.msg.JointState, cb_js)
 	rospy.Service('/ui/reset_base', cob_srvs.srv.Trigger, restart_base)
 	chk_loc = states.movement.CheckLocalization()
