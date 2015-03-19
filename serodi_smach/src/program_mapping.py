@@ -48,6 +48,8 @@ def main(do_setup):
 			
 			smach.Sequence.add('Localization1', states.interaction.SendChoice('loc_start'))
 			smach.Sequence.add('WaitL', states.movement.WaitForMoveBase())
+			if not do_setup:
+				smach.Sequence.add('UI_MappingDone', states.interaction.ShowMenu('next'))
 		smach.StateMachine.add('Main', sq, 
 						   transitions={'success':'Localization2',  'failed':'failure'})
 			
