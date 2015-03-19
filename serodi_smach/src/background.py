@@ -20,6 +20,7 @@ def trigger_srv(srv):
         
 def recover_base():
 	trigger_srv('/base/recover')
+	rospy.loginfo("base recovered")
 
 needs_recover = False
 def cb_em(data):
