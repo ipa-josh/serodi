@@ -16,6 +16,9 @@ import random, math, copy
 #
 #
 
+#g_mode='linear'
+g_mode=''
+
 
 class MoveOnPath(smach.State):
     def __init__(self, sss, path, reverse=False):
@@ -25,6 +28,7 @@ class MoveOnPath(smach.State):
         self.reverse = reverse
 
     def execute(self, userdata):
+		global g_mode
 		if self.reverse:
 			p = copy.deepcopy(self.path)
 			p.reverse()
@@ -36,7 +40,7 @@ class MoveOnPath(smach.State):
 			
 		for pose in p:
 			try:
-				h = self.sss.move('base', pose[0:3], mode='linear')
+				h = self.sss.move('base', pose[0:3], mode=g_mode)
 				h.wait()
 			except:
 				return 'failed'
@@ -50,8 +54,9 @@ class MoveToPose(smach.State):
         self.pose = pose
 
     def execute(self, userdata):
+		global g_mode
 		try:
-			h = self.sss.move('base', self.pose[0:3], mode='linear')
+			h = self.sss.move('base', self.pose[0:3], mode=g_mode)
 			if (not hasattr(userdata, 'nonblocking') or userdata.nonblocking==False):
 				h.wait()
 		except:
@@ -343,6 +348,7 @@ class AutoLocalize(smach.State):
 		return gl( std_srvs.srv.EmptyRequest() )
 		
     def execute(self, userdata):
+		global g_mode
 		self.sub_pa = rospy.Subscriber("/particlecloud", geometry_msgs.msg.PoseArray, self.cb_posearray)
 		
 		#wait for subscriber
@@ -381,7 +387,7 @@ class AutoLocalize(smach.State):
 					res.result.pose.orientation.z,
 					res.result.pose.orientation.w)
 				angle = tf.transformations.euler_from_quaternion(quaternion)[2]
-				h = self.sss.move('base', [x,y,angle], False,mode='linear')
+				h = self.sss.move('base', [x,y,angle], False,mode=g_mode)
 				h.wait(20.)
 				
 			rospy.set_param('/ui/is_localized', True)
@@ -447,3 +453,19 @@ class CheckLocalization:
 	0, 0, 0, 0, 0, var_rot]
 
 		self.pub_pose.publish(pwcs)
+
+
+class WaitForMoveBase(smach.State):
+    def __init__(self, timeout=None):
+        smach.State.__init__(self, outcomes=['success', 'failed'], input_keys=['text','nonblocking'])
+        self.timeout = timeout
+
+    def execute(self, userdata):
+		global g_mode
+		
+		try:
+			rospy.wait_for_service("/global_localization", self.timeout)
+		except:
+			return 'failed'
+		return 'success'
+
