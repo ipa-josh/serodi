@@ -1,11 +1,6 @@
-lights:
-- addr_fs20: '3321'
-  housecode: '12344321'
-  name: Zimmer 1
-  pose: [0.54, 1.14, -1.7, '1.']
-  waiting_time: 10
-- addr_fs20: '3231'
-  housecode: '12344321'
-  name: Zimmer 2
-  pose: [-0.95, 0.65, -1.25, '2.']
-  waiting_time: 10
+'Zimmer 1':
+  - []
+  - []
+'Zimmer 2':
+  - []
+  - []
