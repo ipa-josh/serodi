@@ -191,7 +191,6 @@ class MoveRel_Registration(smach.State):
 		#h.wait()
 
     def execute(self, userdata):
-		print self.teachin
 		self.sub = rospy.Subscriber("/scan_unified", sensor_msgs.msg.LaserScan, self.on_data)
 		
 		if True:#try:
