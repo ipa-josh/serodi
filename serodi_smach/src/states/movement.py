@@ -73,8 +73,8 @@ class MoveRel(smach.State):
     def execute(self, userdata):
 		try:
 			h = self.sss.move_base_rel('base', self.motion)
-			if (not hasattr(userdata, 'nonblocking') or userdata.nonblocking==False):
-				h.wait()
+			#if (not hasattr(userdata, 'nonblocking') or userdata.nonblocking==False):
+			#	h.wait()
 		except:
 			return 'failed'
 		return 'success'
@@ -188,7 +188,7 @@ class MoveRel_Registration(smach.State):
 		print "going to move relative by ",m
 		
 		h = self.sss.move_base_rel('base', m)
-		h.wait()
+		#h.wait()
 
     def execute(self, userdata):
 		print self.teachin
@@ -239,7 +239,7 @@ class Explore(smach.State):
 					angle = random.uniform(-1., 1.)
 				for li in xrange(3):
 					h = self.sss.move_base_rel('base', [0,0,angle])
-					h.wait()
+					#h.wait()
 				
 				check = rospy.ServiceProxy('/check_closure', cob_srvs.srv.GetPoseStampedTransformed)
 				res = check( cob_srvs.srv.GetPoseStampedTransformedRequest() )
@@ -373,7 +373,7 @@ class AutoLocalize(smach.State):
 					angle = random.uniform(-1., 1.)
 				for li in xrange(3):
 					h = self.sss.move_base_rel('base', [0,0,angle])
-					h.wait()
+					#h.wait()
 				
 				#get random pose
 				for tries in xrange(10):
