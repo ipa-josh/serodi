@@ -41,15 +41,14 @@
 	  init_gallery();
     $( "#menu" ).accordion({
 		beforeActivate: function( event, ui ) {
+			var btns = ["#start_scenario", "#start_scenario_patrol", "#start_scenario_operation", "#start_setup_patrol", "#start_setup_lights"];
 			$("#overwrite_loc").show();
-			btn_enable($("#start_scenario"), false);
-			btn_enable($("#start_scenario_patrol"), false);
-			btn_enable($("#start_scenario_operation"), false);
+			for(b in btns)
+				btn_enable($(b), false);
 			
 		  (new ROSLIB.Param({ros : ros, name : '/ui/is_localized'})).get(function(value) {
-				btn_enable($("#start_scenario"), value);
-				btn_enable($("#start_scenario_patrol"), value);
-				btn_enable($("#start_scenario_operation"), value);
+				for(b in btns)
+					btn_enable($(b), value);
 				if(value) $("#overwrite_loc").hide();
 				else $("#overwrite_loc").show();
 		  });
@@ -77,11 +76,11 @@
 				map.update();
 			}
 				
-			if(newIndex-1==IND_PATH) {
+			if(newIndex-1==IND_PATH && currentIndex!=0) {
 				if(!(map.poses.length>1)) return false;
 			}
 				
-			if(newIndex-1==IND_LIGHT) {
+			if(newIndex-1==IND_LIGHT && currentIndex!=0) {
 				if(!(map.poses.length!=known_lights.length)) return false;
 			}
 			
@@ -94,7 +93,7 @@
 						this.poses[i][3] = (i+1)+".";
 					btn_enable($("setup_3_confirm"), this.poses.length>1);
 				}
-				if(currentIndex!=newIndex) map.clearPoses();
+				if(currentIndex!=newIndex && currentIndex!=0) map.clearPoses();
 				map.update();
 			}
 			
@@ -112,7 +111,7 @@
 					btn_enable($("setup_4_confirm"), !this.settings['add_enabled']);
 					this.update();
 				}
-				if(currentIndex!=newIndex) {
+				if(currentIndex!=newIndex && currentIndex!=0) {
 					map.clearPoses();
 					//if(newIndex==4) map.addPose(0,0,0, "");
 				}
@@ -128,9 +127,9 @@
 		$( "#dialog_setup" ).append('<p><div id="setup_map" /></p>');
 		map = new Map("img/map/map_occ.png", $("#setup_map"), ros);
 		
-		$("#wizard_setup").steps("next");
+		if($( "#dialog_setup" ).data("setup_mode")=="") $("#wizard_setup").steps("next");
 		active = $("#wizard_setup");
-		sendChoice("setup");
+		sendChoice("setup"+$( "#dialog_setup" ).data("setup_mode"));
 	});
 	$("#setup_3_confirm").click(function() {
 		sendChoice("path:"+JSON.stringify(map.poses));
@@ -233,7 +232,13 @@
 	$("#ros_connected").click(function() {$( "#dialog_log" ).dialog("open");});
 	
 	$("#start_setup").click(function() {
-		$( "#dialog_setup" ).dialog("open");
+		$( "#dialog_setup" ).data("setup_mode","").dialog("open");
+	});
+	$("#start_setup_lights").click(function() {
+		$( "#dialog_setup" ).data("setup_mode","lights").dialog("open");
+	});
+	$("#start_setup_patrol").click(function() {
+		$( "#dialog_setup" ).data("setup_mode","patrol").dialog("open");
 	});
 	$("#start_localization").click(function() {
 		$( "#dialog_localization" ).dialog("open");
@@ -324,6 +329,12 @@
 	$("#ros_error").hide();
 	$("#ros_connected").effect("shake");
     console.log('Connection made!');
+    
+	//load params
+	  (new ROSLIB.Param({ros : ros, name : '/ui/known_lights'})).get(function(value) {
+		  if(value==null) known_lights=[];
+		  else known_lights = value;
+	  });
   });
   ros.on('close', function() {
 	  $("#menu").accordion( "disable" );
@@ -369,6 +380,21 @@
 			active.parent().dialog("close");
 		}
 	}
+    else if(cmd[0]=="next_lights") {
+		(new ROSLIB.Param({ros : ros, name : '/ui/poses_lights'})).get(function(value) {
+			map.poses = [];
+			for(l in value.lights)
+				map.poses.push(value.lights[l].pose);
+			console.log(map.poses);
+		});
+		if(active) active.steps("setStep",4);
+	}
+    else if(cmd[0]=="next_patrol") {
+		(new ROSLIB.Param({ros : ros, name : '/ui/poses_patrol'})).get(function(value) {
+			map.poses = value.path;
+		});
+		if(active) active.steps("setStep",3);
+	}
   });
   
   
@@ -405,12 +431,7 @@
     name : '/ui/choice',
     messageType : 'std_msgs/String'
   });
-
-  (new ROSLIB.Param({ros : ros, name : '/ui/known_lights'})).get(function(value) {
-      if(value==null) known_lights=[];
-      else known_lights = value;
-      console.log('known_lights: ' + known_lights);
-  });
+  
   </script>
 </head>
 <body>
@@ -639,7 +660,9 @@
     This will create a map and set poses for patrol path and lights.<br /><b>Attention:</b> will override old settings!<br>
     </p>
     <p>
-    <button style="float:right;" id="start_setup">Start</button>
+		<button style="float:right;" id="start_setup_lights">Update poses for lights</button>
+		<button style="float:right;" id="start_setup_patrol">Update patrol path</button>
+		<button style="float:right;" id="start_setup">Start</button>
     </p>
   </div>
   <h3>Shutdown</h3>
