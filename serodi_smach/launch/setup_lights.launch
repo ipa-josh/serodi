@@ -1,0 +1,3 @@
+<launch>
+  <node name="smach_prog_setup" pkg="serodi_smach" type="program_setup.py" args="--lights" cwd="node" output="screen"/>
+</launch>
