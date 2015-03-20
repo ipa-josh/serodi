@@ -30,14 +30,16 @@ def main():
     with sm:
         smach.StateMachine.add('WaitBeforeInit', states.interaction.Wait(5), 
                                transitions={'success':'Init'})
-        smach.StateMachine.add('Init', states.initialization.InitComponents(["base"], sss), 
+        smach.StateMachine.add('Init', states.initialization.InitComponents([], sss), 
                                transitions={'succeeded':'MainMenu', 'failed':'WaitBeforeInit'})
                                
-        smach.StateMachine.add('MainMenu', states.interaction.WaitForChoice(["canceled", "setup", "shutdown", "localization", "scenario", "scenario_operation", "scenario_patrol", "loc_start", "loc_kill"]), 
+        smach.StateMachine.add('MainMenu', states.interaction.WaitForChoice(["canceled", "setup", "setuplights", "setuppatrol", "shutdown", "localization", "scenario", "scenario_operation", "scenario_patrol", "loc_start", "loc_kill"]), 
                                transitions={'canceled': 'Program_None', 'unknown': 'MainMenu',
 											'localization': 'Program_Localization',
 											'shutdown': 'Program_Shutdown',
 											'setup': 'Program_Setup',
+											'setuplights': 'Program_SetupLights',
+											'setuppatrol': 'Program_SetupPatrol',
 											'scenario': 'Program_Scenario',
 											'scenario_operation': 'Program_Scenario_Operation',
 											'scenario_patrol': 'Program_Scenario_Patrol',
@@ -49,6 +51,10 @@ def main():
         smach.StateMachine.add('Program_None', states.initialization.ROSKill(None, [LOC_PKG+' '+LOC_BIN] ), 
 						   transitions={'success':'MainMenu'})
         smach.StateMachine.add('Program_Setup', states.initialization.ROSLaunch('serodi_smach','mapping.launch'), 
+						   transitions={'success':'MainMenu',  'failed':'failure'})
+        smach.StateMachine.add('Program_SetupLights', states.initialization.ROSLaunch('serodi_smach','setup_lights.launch'), 
+						   transitions={'success':'MainMenu',  'failed':'failure'})
+        smach.StateMachine.add('Program_SetupPatrol', states.initialization.ROSLaunch('serodi_smach','setup_patrol.launch'), 
 						   transitions={'success':'MainMenu',  'failed':'failure'})
         smach.StateMachine.add('Program_Localization', states.initialization.ROSLaunch('serodi_smach','localization.launch'), 
 						   transitions={'success':'MainMenu',  'failed':'failure'})
