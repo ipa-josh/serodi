@@ -363,6 +363,12 @@
     if(cmd[0]=="next") {
 		if(active) active.steps("next");
 	}
+    else if(cmd[0]=="finished") {
+		if(active) {
+			//active.steps("finish");
+			active.parent().dialog("close");
+		}
+	}
   });
   
   
