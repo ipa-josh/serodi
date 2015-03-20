@@ -234,7 +234,20 @@ class LoadYaml(smach.State):
 		except:
 			return 'failed'
 		return 'success'
-        
+		
+class SetROSParam(smach.State):
+    def __init__(self, obj, param_name):
+        smach.State.__init__(self, outcomes=['success','failed'], input_keys=['data'])
+        self.obj = obj
+        self.param_name = param_name
+
+    def execute(self, userdata):
+		try:
+			rospy.set_param(self.param_name, userdata.data[self.obj])
+		except:
+			return 'failed'
+		return 'success'
+		
 class IterateVar(smach.State):
     def __init__(self, dest_name):
         smach.State.__init__(self, outcomes=['go','done'], input_keys=['data'], output_keys=['data'])
