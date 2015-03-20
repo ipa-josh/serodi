@@ -335,6 +335,7 @@ class ShowMenu(smach.State):
         self.msg = std_msgs.msg.String(cmd)
 
     def execute(self, userdata):
+        if self.pub.get_num_connections()<1: time.sleep(1)
         self.pub.publish(self.msg)
         return 'success'
 
