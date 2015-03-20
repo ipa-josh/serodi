@@ -47,14 +47,16 @@ function Map(src, parent, ros) {
 			}
 			
 			if(this.obj.active_pose) {
-				this.obj.active_pose=false;
 				if(	x>=58 && x<=this.obj.icon['cut'].width+58 &&
 					y>=4 && y<=this.obj.icon['cut'].height+4 ) {
 					this.obj.poses.splice(this.obj.poses.indexOf(this.obj.active_pose), 1);
+					this.obj.active_pose=false;
 					this.obj.on_updated_pose(this.obj.poses);
 					return;
 				}
 			}
+			
+			this.obj.active_pose=false;
 			
 			if(!this.map_info) return;
 			
