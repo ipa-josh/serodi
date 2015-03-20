@@ -22,6 +22,8 @@ function Map(src, parent, ros) {
 	this.icon={};
 	this.icon['cut']=new Image();
 	this.icon['cut'].src="img/cut.png";
+	this.icon['update']=new Image();
+	this.icon['update'].src="img/update.png";
 	this.icon['add']=new Image();
 	this.icon['add'].src="img/add.png";
 	
@@ -51,6 +53,15 @@ function Map(src, parent, ros) {
 					y>=4 && y<=this.obj.icon['cut'].height+4 ) {
 					this.obj.poses.splice(this.obj.poses.indexOf(this.obj.active_pose), 1);
 					this.obj.active_pose=false;
+					this.obj.on_updated_pose(this.obj.poses);
+					return;
+				}
+				
+				if(	x>=112 && x<=this.obj.icon['update'].width+112 &&
+					y>=4 && y<=this.obj.icon['update'].height+4 ) {
+					this.obj.active_pose[0] = this.obj.robot_pose[0];
+					this.obj.active_pose[1] = this.obj.robot_pose[1];
+					this.obj.active_pose[2] = this.obj.robot_pose[2];
 					this.obj.on_updated_pose(this.obj.poses);
 					return;
 				}
@@ -166,8 +177,10 @@ function Map(src, parent, ros) {
 			if(this.settings['add_enabled'])
 				this.c.drawImage(this.icon['add'],4,4);
 		}
-		if(this.active_pose)
+		if(this.active_pose) {
 			this.c.drawImage(this.icon['cut'],58,4);
+			this.c.drawImage(this.icon['update'],112,4);
+		}
 	}
 	this.update = function() {
 		var d = new Date();
