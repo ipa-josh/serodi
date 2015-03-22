@@ -1,6 +1,7 @@
 <launch>
   <rosparam command="load" file="$(find serodi_smach)/config/lights.yaml" ns="ui"/>
   <rosparam command="load" file="$(find serodi_smach)/config/misc.yaml" ns="/" />
+  <param name="/ui/is_ready" type="bool" value="false" />
   
   <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
   
