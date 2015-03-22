@@ -353,8 +353,6 @@
 	  (new ROSLIB.Param({ros : ros, name : '/ui/known_lights'})).get(function(value) {
 		  if(value==null) known_lights=[];
 		  else known_lights = value;
-		  
-		  $( "#dialog_scenario" ).dialog("open");
 	  });
 	  var is_ready = function(value) {
 		  if(!value) {
