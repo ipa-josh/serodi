@@ -47,6 +47,7 @@ class InitComponents(smach.State):
 				return 'failed'
 				
 		self.tries = 0
+		rospy.set_param('/ui/is_ready', True)
 		return 'succeeded'
 
 import subprocess
