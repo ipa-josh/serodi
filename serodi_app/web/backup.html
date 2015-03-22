@@ -1,1 +1,718 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Serodi</title>
+  <link rel="stylesheet" href="jquery/jquery-ui.css">
+  <script src="jquery/jquery.js"></script>
+  <script src="jquery/jquery-ui.js"></script>
+  <script src="jquery/jquery.ui.touch-punch.min.js"></script>
+  <script src="jquery/jquery.steps.min.js"></script>
+  <script src="js/eventemitter2.min.js"></script>
+  <script src="js/roslib.min.js"></script>
+<script src="js/Vector2.js"></script>
+<script src="js/ShipMovingTouch.js"></script>
+<script src="js/BulletSebs.js"></script>
+  <script src="js/joystick.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/log.js"></script>
+  <script src="js/misc.js"></script>
+  <link rel="stylesheet" href="css/steps.css">
+  <link rel="stylesheet" href="css/style.css">
+  
+  <!-- DataTables -->
+<link rel="stylesheet" type="text/css" href="css/jquery.dataTables.min.css">
+<script type="text/javascript" charset="utf8" src="js/jquery.dataTables.min.js"></script>
 
+  <script>	
+	
+	//variables
+	var map;
+	var known_lights = [];
+	
+	function btn_enable($btn, enabled) {
+		if(!enabled)
+			$btn.prop("disabled",true).find("span").addClass('disabled');
+		else
+			$btn.prop("disabled",false).find("span").removeClass('disabled');
+	}
+	
+  $(function() {
+	  init_gallery();
+    $( "#menu" ).accordion({
+		beforeActivate: function( event, ui ) {
+			var btns = ["#start_scenario", "#start_scenario_patrol", "#start_scenario_operation", "#start_setup_patrol", "#start_setup_lights"];
+			$("#overwrite_loc").show();
+			for(b in btns)
+				btn_enable($(b), false);
+			
+		  (new ROSLIB.Param({ros : ros, name : '/ui/is_localized'})).get(function(value) {
+				for(b in btns)
+					btn_enable($(b), value);
+				if(value) $("#overwrite_loc").hide();
+				else $("#overwrite_loc").show();
+		  });
+		}
+    });
+	$( "button" ).button();
+	
+	$("#wizard_setup").steps({
+		headerTag: "h3",
+		bodyTag: "section",
+		transitionEffect: "slideLeft",
+		autoFocus: true,
+		enableKeyNavigation: false,
+		enablePagination: false,
+		forceMoveForward: true,
+		onStepChanging: function (event, currentIndex, newIndex)
+		{
+			var IND_PATH = 3;
+			var IND_LIGHT= 4;
+			
+			if(newIndex==IND_PATH || newIndex==IND_LIGHT) {
+				map.settings['add_enabled'] = true;
+				btn_enable($("setup_3_confirm"), false);
+				btn_enable($("setup_4_confirm"), false);
+				map.update();
+			}
+				
+			if(newIndex-1==IND_PATH && currentIndex!=0) {
+				if(!(map.poses.length>1)) return false;
+			}
+				
+			if(newIndex-1==IND_LIGHT && currentIndex!=0) {
+				if(!(map.poses.length!=known_lights.length)) return false;
+			}
+			
+			if(newIndex==IND_PATH) {
+				
+				map.on_updated_pose = function() {
+					console.log("poses: ",this.poses);
+					
+					for(i=0; i<this.poses.length; i++)
+						this.poses[i][3] = (i+1)+".";
+					btn_enable($("setup_3_confirm"), this.poses.length>1);
+				}
+				if(currentIndex!=newIndex && currentIndex!=0) map.clearPoses();
+				map.update();
+			}
+			
+			if(newIndex==IND_LIGHT) {
+				
+				map.on_updated_pose = function() {
+					//turn off all lights except for next
+					for(i=0; i<known_lights.length; i++)
+						set_external_light(ros, known_lights[i]['housecode'], known_lights[i]['addr_fs20'], (i==map.poses.length));
+					
+					for(i=0; i<this.poses.length; i++)
+						this.poses[i][3] = known_lights[i].name;
+						
+					this.settings['add_enabled'] = (known_lights!=this.poses.length);
+					btn_enable($("setup_4_confirm"), !this.settings['add_enabled']);
+					this.update();
+				}
+				if(currentIndex!=newIndex && currentIndex!=0) {
+					map.clearPoses();
+					//if(newIndex==4) map.addPose(0,0,0, "");
+				}
+				map.update();
+			}
+			
+			return true;
+		}
+	});
+	$("#setup_0_confirm").click(function() {
+		btn_enable($("setup_3_confirm"), false);
+		btn_enable($("setup_4_confirm"), false);
+		$( "#dialog_setup" ).append('<p><div id="setup_map" /></p>');
+		map = new Map("img/map/map_occ.png", $("#setup_map"), ros);
+		
+		if($( "#dialog_setup" ).data("setup_mode")=="") $("#wizard_setup").steps("next");
+		active = $("#wizard_setup");
+		sendChoice("setup"+$( "#dialog_setup" ).data("setup_mode"));
+	});
+	$("#setup_3_confirm").click(function() {
+		sendChoice("path:"+JSON.stringify(map.poses));
+		//$("#wizard_setup").steps("next");
+	});
+	$("#setup_4_confirm").click(function() {
+		data = []
+		for(i=0; i<known_lights.length; i++) {
+			data.push($.extend(known_lights[i], {
+				'pose': map.poses[i]
+				}));
+		}
+		sendChoice("lights:"+JSON.stringify(data));
+		//$("#wizard_setup").steps("next");
+	});
+	
+	var hidden_modeA=0;
+	$("#hidden_feature_A").click(function() {
+		console.log("hidden_feature_A "+hidden_modeA);
+		hidden_modeA = (hidden_modeA+1)%3;
+		var i=0;
+		set_external_light(ros, known_lights[i]['housecode'], known_lights[i]['addr_fs20'], hidden_modeA==1);
+		set_external_light(ros, known_lights[i]['housecode'], (parseInt(known_lights[i]['addr_fs20'])+1)+"", hidden_modeA==2);
+	});
+	
+	var hidden_modeB=0;
+	$("#hidden_feature_B").click(function() {
+		console.log("hidden_feature_B "+hidden_modeB);
+		hidden_modeB = (hidden_modeB+1)%3;
+		var i=1;
+		set_external_light(ros, known_lights[i]['housecode'], known_lights[i]['addr_fs20'], hidden_modeB==1);
+		set_external_light(ros, known_lights[i]['housecode'], (parseInt(known_lights[i]['addr_fs20'])+1)+"", hidden_modeB==2);
+	});
+	
+	$("#wizard_localization").steps({
+		headerTag: "h3",
+		bodyTag: "section",
+		transitionEffect: "slideLeft",
+		autoFocus: true,
+		enableKeyNavigation: false,
+		enablePagination: false,
+		forceMoveForward: true
+	});
+	$("#localization_0_confirm").click(function() {
+		$( "#dialog_localization" ).append('<p><div id="localization_map" /></p>');
+		map = new Map("img/map/map_occ.png", $("#localization_map"), ros);
+		
+		//$("#wizard_localization").steps("next");
+		active = $("#wizard_localization");
+		sendChoice("localization");
+	});
+	$("#localization_2_global").click(function() {
+		sendChoice("loc_pos_global");
+	});
+	$("#localization_2_zero").click(function() {
+		sendChoice("loc_pos_zero");
+	});
+	
+	$( "#dialog_setup" ).dialog({autoOpen: false,
+		close: function( event, ui ) {$("#wizard_setup").steps("reset");map.destroy();sendCancel();},
+		open: function( event, ui ) {resize_dialogs();}}
+	);
+	$( "#dialog_localization" ).dialog({autoOpen: false,
+		close: function( event, ui ) {$("#wizard_localization").steps("reset");map.destroy();sendCancel();},
+		open: function( event, ui ) {resize_dialogs();}}
+	);
+	$( "#dialog_log" ).dialog({autoOpen: false,
+		open: function( event, ui ) {resize_dialogs();}
+	});
+	$("#scenario_wait").click(function() {
+		  sendChoice("wait");
+	});
+	$("#message_btn1").click(function() {
+		  sendChoice("wait");
+	});
+	$("#message_btn2").click(function() {
+		  sendChoice("wait");
+	});
+	$( "#dialog-confirm" ).dialog({autoOpen: false,
+      resizable: false,
+      height:230,
+      modal: true,
+      buttons: {
+        "Shutdown": function() {
+		  sendChoice("shutdown");
+          $( this ).dialog( "close" );
+        },
+        Cancel: function() {
+          $( this ).dialog( "close" );
+        }
+      }
+    });
+    
+	$(".ui-dialog").data('left_offset', 200);
+	$( "#dialog_scenario" ).dialog({autoOpen: false,
+		close: function( event, ui ) {sendCancel();},
+		open: function( event, ui ) {resize_dialogs();}
+	}).prev(".ui-dialog-titlebar").css("font-weight","bold").css("font-size","300%").css("text-align","center").css("padding", "0.4em 0.2em");
+
+	//$(".ui-dialog-titlebar").css('width','98%').append('<img src="images/ipa.gif" height="40px" style="float:right; top:0px;" />');
+	
+	
+	function resize_dialogs() {
+	   $(".ui-dialog").each(function() {
+		   var off = $(this).data('left_offset');
+		   if(!off) off=0;
+			   $(this).css({
+				'width': $(window).width()-off,
+				'height': $(window).height(),
+				'left': off+'px',
+				'top':'0px'
+		   });
+		});
+   }
+	$(window).resize(resize_dialogs);
+	
+	$("#ros_error").click(function() {$( "#dialog_log" ).dialog("open");});
+	$("#ros_connected").click(function() {$( "#dialog_log" ).dialog("open");});
+	
+	$("#start_setup").click(function() {
+		$( "#dialog_setup" ).data("setup_mode","").dialog("open");
+	});
+	$("#start_setup_lights").click(function() {
+		$( "#dialog_setup" ).data("setup_mode","lights").dialog("open");
+	});
+	$("#start_setup_patrol").click(function() {
+		$( "#dialog_setup" ).data("setup_mode","patrol").dialog("open");
+	});
+	$("#start_localization").click(function() {
+		$( "#dialog_localization" ).dialog("open");
+	});
+	$("#start_scenario").click(function() {
+		sendChoice("scenario");
+		$( "#dialog_scenario" ).dialog("open");
+	});
+	$("#start_scenario_operation").click(function() {
+		sendChoice("scenario_operation");
+		$( "#dialog_scenario" ).dialog("open");
+	});
+	$("#start_scenario_patrol").click(function() {
+		sendChoice("scenario_patrol");
+		$( "#dialog_scenario" ).dialog("open");
+	});
+	$("#start_shutdown").click(function() {
+		$( "#dialog-confirm" ).dialog("open");
+	});
+	
+	$("#reset_base").click(function() {
+		var srv = new ROSLIB.Service({
+			ros : ros,
+			name : '/ui/reset_base',
+			serviceType : 'cob_srvs/Trigger'
+		  });
+
+		  srv.callService(new ROSLIB.ServiceRequest({}), function(result) {
+			console.log('Result for service call on '+ srv.name+ ': ',  result);
+		  });
+	});
+
+	$( "#radio" ).buttonset();
+	$("#overwrite_loc").buttonset();
+	
+	var joy = new Joystick("joystick", ros);
+	joy.enabled = false;
+	joy.update();
+	$("#joystick_lockL").click(function(){joy.enabled=false;joy.update();});
+	$("#joystick_lockU").click(function(){joy.enabled=true;joy.update();});
+	
+	$("#overwrite_loc_on").click(function(){
+			btn_enable($("#start_scenario"), true);
+			btn_enable($("#start_scenario_patrol"), true);
+			btn_enable($("#start_scenario_operation"), true);
+			$("#overwrite_loc").hide();
+	});
+	$("#ros_connected").hide();
+	
+	start_logging(ros, $("#log_tbl"));
+  });
+  
+  // Connecting to ROS
+  // -----------------
+  var local_hostname="localhost";
+  if(window.location.hostname.length>0) local_hostname = window.location.hostname;
+  var ros_master_uris=['ws://localhost:9090', 'ws://'+local_hostname+':9090', 'ws://cob4-6-b1:9090'];
+  //var ros_master_uris=['ws://'+window.location.hostname+':9090'];
+  var ros_master_uris_last = 0;
+  var ros = new ROSLIB.Ros();
+  var active;
+  
+  function sendChoice(choice) {
+	  console.log("choice: "+choice);
+	  var msg = new ROSLIB.Message({
+		data : choice
+	  });
+	  // And finally, publish.
+	  pub_choice.publish(msg);
+  }
+  function sendCancel() {
+	  delete map;
+	  sendChoice("canceled");
+  }
+  
+  // If there is an error on the backend, an 'error' emit will be emitted.
+  ros.on('error', function(error) {
+	  $("#menu").accordion( "disable" );
+	$("#ros_connected").hide();
+	$("#ros_warn").hide();
+	$("#ros_error").show();
+	$("#ros_error").effect("shake");
+    console.log(error);
+  });
+  // Find out exactly when we made a connection.
+  ros.on('connection', function() {
+	$("#menu").accordion( "disable" );
+	$("#ros_connected").hide();
+	$("#ros_warn").show();
+	$("#ros_error").hide();
+	console.log('Connection made!');
+    
+	//load params
+	  (new ROSLIB.Param({ros : ros, name : '/ui/known_lights'})).get(function(value) {
+		  if(value==null) known_lights=[];
+		  else known_lights = value;
+		  
+		  $( "#dialog_scenario" ).dialog("open");
+	  });
+	  var is_ready = function(value) {
+		  if(!value) {
+	  		setTimeout(function() {(new ROSLIB.Param({ros : ros, name : '/ui/is_ready'})).get(is_ready);}, 5000);
+		  } else {
+			$("#menu").accordion( "enable" );
+			$("#ros_connected").show();
+			$("#ros_error").hide();
+			$("#ros_warn").hide();
+			$("#ros_connected").effect("shake");
+		  }
+	  };
+	  is_ready(false);
+  });
+  ros.on('close', function() {
+	  $("#menu").accordion( "disable" );
+	$("#ros_connected").hide();
+	$("#ros_warn").hide();
+	$("#ros_error").show();
+	$("#ros_error").effect("shake");
+    console.log('Connection closed.');
+    
+    setTimeout(ros_reconnect, 2000);
+  });
+  
+  // Create a connection to the rosbridge WebSocket server.
+  try {
+	ros.connect(ros_master_uris[ros_master_uris_last]);
+  } catch(e) {
+	console.log(e);
+  }
+  function ros_reconnect() {
+	  ros_master_uris_last = (ros_master_uris_last+1)%ros_master_uris.length;
+	  ros.connect(ros_master_uris[ros_master_uris_last]);
+  }
+  
+  // Like when publishing a topic, we first create a Topic object with details of the topic's name
+  // and message type. Note that we can call publish or subscribe on the same topic object.
+  var sub_menu = new ROSLIB.Topic({
+    ros : ros,
+    name : '/ui/menu',
+    messageType : 'std_msgs/String'
+  });
+  // Then we add a callback to be called every time a message is published on this topic.
+  sub_menu.subscribe(function(message) {
+    console.log("ui menu: ",message);
+    
+    cmd = message.data.split(":");
+    if(cmd.length<1) return;
+    
+    if(cmd[0]=="next") {
+		if(active) active.steps("next");
+	}
+    else if(cmd[0]=="finished") {
+		if(active) {
+			//active.steps("finish");
+			active.parent().dialog("close");
+		}
+	}
+    else if(cmd[0]=="next_lights") {
+		(new ROSLIB.Param({ros : ros, name : '/ui/poses_lights'})).get(function(value) {
+			map.poses = [];
+			for(l in value.lights)
+				map.poses.push(value.lights[l].pose);
+			console.log(map.poses);
+		});
+		if(active) active.steps("setStep",4);
+	}
+    else if(cmd[0]=="next_patrol") {
+		(new ROSLIB.Param({ros : ros, name : '/ui/poses_patrol'})).get(function(value) {
+			map.poses = value.path;
+		});
+		if(active) active.steps("setStep",3);
+	}
+  });
+  
+  
+  var sub_msg = new ROSLIB.Topic({
+    ros : ros,
+    name : '/ui/msg',
+    messageType : 'std_msgs/String'
+  });
+  // Then we add a callback to be called every time a message is published on this topic.
+  sub_msg.subscribe(function(message) {
+    console.log("ui msg: ",message);
+    
+    $("#dialog_scenario").dialog('option', 'title', message.data);
+	$("#dialog_scenario").css('height','79%');
+    
+    if(message.data.search("Warte auf")!=-1)
+		$("#message_btn1").show();
+	else
+		$("#message_btn1").hide();
+		
+    if(message.data.search("dokumentieren")!=-1) {
+		$("#message_btn2").show();
+		$("#warenhaltung").show();
+	}
+	else {
+		$("#message_btn2").hide();
+		$("#warenhaltung").hide();
+	}
+  });
+  
+  // First, we create a Topic object with details of the topic's name and message type.
+  var pub_choice = new ROSLIB.Topic({
+    ros : ros,
+    name : '/ui/choice',
+    messageType : 'std_msgs/String'
+  });
+  
+  </script>
+</head>
+<body>
+	
+	
+<div id="dialog_log" title="Log">
+	<button id="reset_base">Reset base</button><br />
+	Log file of current SMACH states output:<br />
+	<table id="log_tbl" class="display" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th>File</th>
+                <th>Level</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+ 
+        <tfoot>
+            <tr>
+                <th>File</th>
+                <th>Level</th>
+                <th>Message</th>
+            </tr>
+        </tfoot>
+ 
+        <tbody></tbody>
+   </table>
+</div>
+
+
+<div id="dialog_setup" title="Setup">
+<div id="wizard_setup">
+    <h3>Warnings</h3>
+    <section>
+        <p>
+		<b>Attention:</b> The robot is going to move on itself. Please keep watch! Keep the emergency stop in your hand! <br />
+		<b>Attention:</b> This will override all previous settings! <br />
+		<button id="setup_0_confirm">Ok</button>
+        </p>
+    </section>
+    <h3>Mapping...</h3>
+    <section>
+        <p>Please wait while the robot is moving around and mapping the environment. This will stop automatically. Otherwise you can cancel the action by closing the dialog.</p>
+    </section>
+    <h3>Localize...</h3>
+    <section>
+        <p>Please wait while the robot is moving around and localizing itslef in the environment. This will stop automatically. Otherwise you can cancel the action by closing the dialog.</p>
+    </section>
+    <h3>Set Patrol Path</h3>
+    <section>
+        <p>Move the robot to the desired position and click on "+". The poses (with numbers) are the patrol path which will be used in the scenario.</p>
+        <p>
+			<button id="setup_3_confirm">Ok</button>
+        </p>
+    </section>
+    <h3>Set Poses of Lights</h3>
+    <section>
+        <p>Move the robot to the light which is turned on and click on "+".</p>
+        <p>
+			<button id="setup_4_confirm">Ok</button>
+        </p>
+    </section>
+    <h3>Done!</h3>
+    <section>
+        <p>Setup finished. Saved everything. Localization or a restart is not necessary. Close the dialog.</p>
+    </section>
+</div>
+</div>
+	
+<div id="dialog_localization" title="Localization">
+<div id="wizard_localization">
+    <h3>Warnings</h3>
+    <section>
+        <p>
+		<b>Attention:</b> The robot is going to move on itself. Please keep watch! Keep the emergency stop in your hand! <br />
+		<button id="localization_0_confirm">Ok</button>
+		<br /><br />
+        </p>
+    </section>
+    <h3>Choice...</h3>
+    <section>
+    	<p>
+    		Please choose if you want to use global localization or a defined staring position.
+    		The starting position is the first position at mapping. This is faster and more safe (if the initial position is correct!).
+    	</p>
+        <p>
+		<button id="localization_2_global">Global localizaton</button>
+		<button id="localization_2_zero">Localization with starting position</button>
+		<br /><br />
+        </p>
+    </section>
+    <h3>Localize...</h3>
+    <section>
+        <p>Please wait while the robot is moving around and localizing itslef in the environment. This will stop automatically. Otherwise you can cancel the action by closing the dialog.
+		<br /><br /></p>
+    </section>
+    <h3>Done!</h3>
+    <section>
+        <p>The robot is localized now. Close the dialog.
+		<br /><br /></p>
+    </section>
+</div>
+</div>
+
+<div id="dialog-confirm" title="Shutdown the robot?">
+  <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>This will shutdown the robot. Are you sure?</p>
+</div>
+	
+<div id="dialog_scenario" title="Pflegewagenverwaltung">
+	<p>
+		<button id="message_btn1" style="font-size: 150%;margin-left: auto; margin-right: auto; width: 100%;">Pflegekraft anwesend</button>
+		<button id="message_btn2" style="font-size: 150%;margin-left: auto; margin-right: auto; width: 100%;">Freigabe</button>
+	</p>
+<!--p>
+	If the green light is on you can pause the scenario.
+	<button id="scenario_wait">Pause/Run</button>
+</p-->
+<div id="warenhaltung" class="ui-widget ui-helper-clearfix">
+ 
+<ul id="gallery" class="gallery_box gallery ui-helper-reset ui-helper-clearfix ui-widget-content ui-state-default" style="width: 47%; height: 20em;">
+  <h4 class="ui-widget-header">Inhalt Pflegewagen</h4>
+  
+  <li class="ui-widget-content ui-corner-tr" style="background: white">
+    <img src="img/content/Latexhandschuh.jpg" alt="The peaks of High Tatras" width="96" height="72">
+  </li>
+  <li class="ui-widget-content ui-corner-tr" style="background: white">
+    <img src="img/content/waschlotion.jpg" alt="The chalet at the Green mountain lake" width="96" height="72">
+  </li>
+  <li class="ui-widget-content ui-corner-tr" style="background: white">
+    <img src="img/content/muellbeutel.jpg" alt="Planning the ascent" width="96" height="72">
+  </li>
+  <li class="ui-widget-content ui-corner-tr" style="background: white">
+    <img src="img/content/schutzkappen.jpg" alt="On top of Kozi kopka" width="96" height="72">
+  </li>
+  
+  <li class="ui-widget-content ui-corner-tr" style="background: white">
+    <img src="img/content/Huehneraugen-Pflaster.png" alt="On top of Kozi kopka" width="96" height="72">
+  </li>
+  <li class="ui-widget-content ui-corner-tr" style="background: white">
+    <img src="img/content/Rasierer.jpg" alt="On top of Kozi kopka" width="96" height="72">
+  </li>
+  <li class="ui-widget-content ui-corner-tr" style="background: white">
+    <img src="img/content/wegehahn.jpg" alt="On top of Kozi kopka" width="96" height="72">
+  </li>
+  <li class="ui-widget-content ui-corner-tr" style="background: white">
+    <img src="img/content/in-stopfen.jpg" alt="On top of Kozi kopka" width="96" height="72">
+  </li>
+  
+  <li class="ui-widget-content ui-corner-tr" style="background: white">
+    <img src="img/content/spritze.jpg" alt="On top of Kozi kopka" width="96" height="72">
+  </li>
+  <li class="ui-widget-content ui-corner-tr" style="background: white">
+    <img src="img/content/binde.jpg" alt="On top of Kozi kopka" width="96" height="72">
+  </li>
+  <li class="ui-widget-content ui-corner-tr" style="background: white">
+    <img src="img/content/Octanisept.jpg" alt="On top of Kozi kopka" width="96" height="72">
+  </li>
+  <li class="ui-widget-content ui-corner-tr" style="background: white">
+    <img src="img/content/Intermed_100268.jpg" alt="On top of Kozi kopka" width="96" height="72">
+  </li>
+</ul>
+ 
+<div id="trash" class="gallery_box ui-widget-content ui-state-default" style="width: 47%; height: 20em;">
+  <h4 class="ui-widget-header"><span class="ui-icon ui-icon-trash">Verbrauch</span>Verbrauch</h4>
+</div>
+</div>
+
+	<p style="height: 20px">
+		<img id="hidden_feature_A" src="images/ipa.gif" height="50px" style="float:left;position:absolute; bottom:5px;" />
+		<img id="hidden_feature_B" src="images/serodi.png" height="50px" style="float:right;position:absolute; bottom:5px;right:30px;" />
+	</p>
+</div>
+ 
+<table>
+<tr>
+<td>
+	<div id="ros_connected"><img src="img/robot_ok.png" height="400" /></div>
+	<div id="ros_error"><img src="img/robot_err.png" height="400" /></div>
+	<div id="ros_warn"><img src="img/robot_err.png" height="400" /></div>
+	<br />
+	<div id="radio">
+		<input type="radio" id="joystick_lockL" name="joystick_lock" checked="checked"><label for="joystick_lockL">Lock</label>
+		<input type="radio" id="joystick_lockU" name="joystick_lock"><label for="joystick_lockU">Unlock</label>
+	</div>
+	<div id="joystick" style="width:200px;height:200px;" />
+</td>
+<td>
+
+<div id="menu_container" style="width:1000px !important;"></div>
+<div id="menu" style="height:666px;width:100% !important;">
+  <h3>Localization</h3>
+  <div>
+    <p>
+    This will localize the robot in its map. <b>This is necessary after every start of the robot software!</b><br>
+    </p>
+    <p>
+    <button style="float:right;" id="start_localization">Start</button>
+    </p>
+  </div>
+  <h3>Scenario</h3>
+  <div>
+    <p>
+    Starts the scenario: drive two times the patrol path, then a random light is ringing, and then again two times the patrol path<br>
+    <b>Attention: </b>Please keep time in mind. The battery is running out after 30 minutes!
+    </p>
+    <p>
+    	<b>Start all:</b> Starts patrol (4x) + operation (1x)<br />
+    	<b>Start patrol:</b> Starts patrol (1x)<br />
+    	<b>Start operation:</b> Starts operation (1x)<br />
+    </p>
+    <p>
+		<div id="overwrite_loc" style="float:left">
+			I am sure to be localized: 
+			<input type="radio" id="overwrite_loc_on" name="overwrite_loc" ><label for="overwrite_loc_on">Yes</label>
+			<input type="radio" id="overwrite_loc_off" name="overwrite_loc"checked="checked"><label for="overwrite_loc_off">No</label>
+		</div>
+		
+		<button style="float:right;" id="start_scenario">Start all</button>
+		<button style="float:right;" id="start_scenario_patrol">Start patrol</button>
+		<button style="float:right;" id="start_scenario_operation">Start operation</button>
+		<br /><br />
+    </p>
+  </div>
+  <h3>Setup</h3>
+  <div>
+    <p>
+    This will create a map and set poses for patrol path and lights.<br /><b>Attention:</b> will override old settings!<br>
+    </p>
+    <p>
+		<button style="float:right;" id="start_setup_lights">Update poses for lights</button>
+		<button style="float:right;" id="start_setup_patrol">Update patrol path</button>
+		<button style="float:right;" id="start_setup">Start</button>
+    </p>
+  </div>
+  <h3>Shutdown</h3>
+  <div>
+    <p>
+    Shutdown the robot.<br>
+    </p>
+    <p>
+    <button style="float:right;" id="start_shutdown">Shutdown</button>
+    </p>
+  </div>
+</div>
+</div>
+ </td></tr>
+ </table>
+ 
+</body>
+</html>
