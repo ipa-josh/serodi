@@ -20,6 +20,7 @@ class InitComponents(smach.State):
         smach.State.__init__(self, outcomes=['succeeded','failed'], input_keys=['nonblocking'])
         self.sss = sss
         self.components = components
+        self.tries = 0
         
     def block(self, h, userdata):
         if (not hasattr(userdata, 'nonblocking') or userdata.nonblocking==False):
@@ -30,6 +31,11 @@ class InitComponents(smach.State):
 
     def execute(self, userdata):
 		self.handles = []
+		self.tries += 1
+		if self.tries>50:
+			smach.logerr("component init tries exceeded")
+			return 'failed'
+		
 		for c in self.components:
 			if not self.block(self.sss.init(c,False), userdata):
 				return 'failed'
@@ -40,6 +46,7 @@ class InitComponents(smach.State):
 			if h.get_state()!=3:
 				return 'failed'
 				
+		self.tries = 0
 		return 'succeeded'
 
 import subprocess
