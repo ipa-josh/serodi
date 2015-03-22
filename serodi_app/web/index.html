@@ -318,27 +318,41 @@
   ros.on('error', function(error) {
 	  $("#menu").accordion( "disable" );
 	$("#ros_connected").hide();
+	$("#ros_warn").hide();
 	$("#ros_error").show();
 	$("#ros_error").effect("shake");
     console.log(error);
   });
   // Find out exactly when we made a connection.
   ros.on('connection', function() {
-	  $("#menu").accordion( "enable" );
-	$("#ros_connected").show();
+	$("#menu").accordion( "disable" );
+	$("#ros_connected").hide();
+	$("#ros_warn").show();
 	$("#ros_error").hide();
-	$("#ros_connected").effect("shake");
-    console.log('Connection made!');
+	console.log('Connection made!');
     
 	//load params
 	  (new ROSLIB.Param({ros : ros, name : '/ui/known_lights'})).get(function(value) {
 		  if(value==null) known_lights=[];
 		  else known_lights = value;
 	  });
+	  var is_ready = function(value) {
+		  if(!value) {
+	  		setTimeout(function() {(new ROSLIB.Param({ros : ros, name : '/ui/is_ready'})).get(is_ready);}, 5000);
+		  } else {
+			$("#menu").accordion( "enable" );
+			$("#ros_connected").show();
+			$("#ros_error").hide();
+			$("#ros_warn").hide();
+			$("#ros_connected").effect("shake");
+		  }
+	  };
+	  is_ready(false);
   });
   ros.on('close', function() {
 	  $("#menu").accordion( "disable" );
 	$("#ros_connected").hide();
+	$("#ros_warn").hide();
 	$("#ros_error").show();
 	$("#ros_error").effect("shake");
     console.log('Connection closed.');
@@ -610,6 +624,7 @@
 <td>
 	<div id="ros_connected"><img src="img/robot_ok.png" height="400" /></div>
 	<div id="ros_error"><img src="img/robot_err.png" height="400" /></div>
+	<div id="ros_warn"><img src="img/robot_err.png" height="400" /></div>
 	<br />
 	<div id="radio">
 		<input type="radio" id="joystick_lockL" name="joystick_lock" checked="checked"><label for="joystick_lockL">Lock</label>
